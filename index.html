@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0">
+    <title>积分计算器（jijienen2026版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f5f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px 20px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #1e293b;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: border 0.2s;
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: #3b82f6;
+            background: white;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:active {
+            background: #1d4ed8;
+            transform: scale(0.98);
+        }
+        .result-box {
+            background: #f1f5f9;
+            border-radius: 18px;
+            padding: 18px;
+            margin-top: 24px;
+            display: none;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #1e293b;
+        }
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+        .result-label {
+            color: #475569;
+        }
+        .result-value {
+            font-weight: 600;
+        }
+        .section-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #64748b;
+            margin: 14px 0 10px;
+            padding-top: 14px;
+            border-top: 1px dashed #cbd5e1;
+            letter-spacing: 0.5px;
+        }
+        .highlight {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #0f172a;
+        }
+        .hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: -8px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border-left: 3px solid #3b82f6;
+        }
+        .date-hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: -10px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .total-days-box {
+            font-size: 0.95rem;
+            color: #1e293b;
+            margin-top: -8px;
+            margin-bottom: 16px;
+            font-weight: 500;
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .total-days-box span {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎈 积分计算器</h1>
+        <div class="subtitle">jijienen2026 版</div>
+
+        <div class="form-group">
+            <label>起始日期</label>
+            <input type="date" id="startDate" value="2026-05-01" min="2026-05-01" max="2026-12-31">
+        </div>
+        <div class="form-group">
+            <label>结束日期</label>
+            <input type="date" id="endDate" value="2026-05-10" min="2026-05-01" max="2026-12-31">
+        </div>
+
+        <div class="total-days-box">
+            📅 总天数：<span id="resTotalDays">-</span> 天
+        </div>
+
+        <div class="date-hint">
+            ⚠️ 默认当天未领取，若已领取，请将起始日期改为后一天。
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>已有积分</label>
+                <input type="number" id="a" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>已有游园币</label>
+                <input type="number" id="b" value="0" min="0">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>月卡天数</label>
+                <input type="number" id="D" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>假日卡天数</label>
+                <input type="number" id="E" value="0" min="0">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>补充双倍天数</label>
+                <input type="number" id="G" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>战令氪金档位天数</label>
+                <input type="number" id="H" value="0" min="0">
+            </div>
+        </div>
+        <div class="hint">
+            💡 目前只考虑了五一、二周年庆、国庆的双倍。如果有其他双倍天数，比如暑假战令免费档位、非节假日期间返场限定等活动，请自行补充在「补充双倍天数」里。
+        </div>
+
+        <button onclick="calculate()">📊 开始计算</button>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-item">
+                <span class="result-label">🪙 可得游园币</span>
+                <span class="result-value" id="resCoin">-</span>
+            </div>
+            <div class="section-title">【打气球后】</div>
+            <div class="result-item">
+                <span class="result-label">⭐ 最终积分</span>
+                <span class="result-value highlight" id="resE">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">💵 剩余游园币</span>
+                <span class="result-value" id="resRemain">-</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            由 B站吉恩上将 制作<br>
+            若有帮助，点点关注<br>
+            若有问题，也可指出
+        </div>
+    </div>
+
+    <script>
+        const holidays = [
+            { start: new Date(2026, 4, 1), end: new Date(2026, 4, 10) },
+            { start: new Date(2026, 7, 8), end: new Date(2026, 7, 24) },
+            { start: new Date(2026, 8, 26), end: new Date(2026, 9, 8) }
+        ];
+
+        function overlapDays(rangeStart, rangeEnd, holidayStart, holidayEnd) {
+            const start = new Date(Math.max(rangeStart.getTime(), holidayStart.getTime()));
+            const end = new Date(Math.min(rangeEnd.getTime(), holidayEnd.getTime()));
+            if (start > end) return 0;
+            return Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        }
+
+        function calculate() {
+            let startDate = new Date(document.getElementById('startDate').value + 'T00:00:00');
+            let endDate = new Date(document.getElementById('endDate').value + 'T00:00:00');
+            const a = parseInt(document.getElementById('a').value) || 0;
+            const b = parseInt(document.getElementById('b').value) || 0;
+            const D = parseInt(document.getElementById('D').value) || 0;
+            const E = parseInt(document.getElementById('E').value) || 0;
+            const G = parseInt(document.getElementById('G').value) || 0;
+            const H = parseInt(document.getElementById('H').value) || 0;
+
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                alert('请输入有效的日期');
+                return;
+            }
+            if (startDate > endDate) {
+                alert('起始日期不能晚于结束日期');
+                return;
+            }
+
+            const C = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById('resTotalDays').textContent = C;
+
+            // 验证所有输入不能为负
+            if (a < 0 || b < 0 || D < 0 || E < 0 || G < 0 || H < 0) {
+                alert('所有数值不能为负数');
+                return;
+            }
+
+            // 月卡、假日卡、战令氪金天数不能超过总天数
+            if (D > C) {
+                alert('月卡天数不能大于总天数');
+                return;
+            }
+            if (E > C) {
+                alert('假日卡天数不能大于总天数');
+                return;
+            }
+            if (H > C) {
+                alert('战令氪金档位天数不能大于总天数');
+                return;
+            }
+
+            let F = 0;
+            holidays.forEach(h => {
+                F += overlapDays(startDate, endDate, h.start, h.end);
+            });
+
+            const c = (C + F + G + D) * 180 + 1000 * E + 360 * H;
+            const d = Math.floor((b + c) / 30);
+            const e = d * 196 + a;
+            const f = (b + c) - 30 * d;
+
+            document.getElementById('resCoin').textContent = c.toLocaleString();
+            document.getElementById('resE').textContent = e.toLocaleString();
+            document.getElementById('resRemain').textContent = f.toLocaleString();
+
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            calculate();
+        });
+    </script>
+</body>
+</html>
