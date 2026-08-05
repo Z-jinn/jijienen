@@ -93,8 +93,8 @@
     <h1>🎈 积分计算器</h1>
     <div class="subtitle">jijienen2026 版</div>
 
-    <div class="form-group"><label>起始日期</label><input type="date" id="startDate" min="2026-07-08" max="2026-12-31"></div>
-    <div class="form-group"><label>结束日期</label><input type="date" id="endDate" min="2026-07-08" max="2026-12-31"></div>
+    <div class="form-group"><label>起始日期</label><input type="date" id="startDate" min="2026-05-01" max="2026-12-31"></div>
+    <div class="form-group"><label>结束日期</label><input type="date" id="endDate" min="2026-05-01" max="2026-12-31"></div>
     <div class="total-days-box">📅 总天数：<span id="resTotalDays">-</span> 天</div>
     <div class="date-hint">⚠️ 默认当天未领取，若已领取，请将起始日期改为后一天。</div>
 
@@ -111,7 +111,7 @@
         <div class="form-group"><label>战令氪金档位天数</label><input type="number" id="H" value="0" min="0"></div>
     </div>
     <div class="hint">
-        💡 目前只考虑了二周年庆、国庆的双倍。如有其他双倍天数，请自行补充在「补充双倍天数」里。
+        💡 目前只考虑了五一、二周年庆、国庆的双倍。如有其他双倍天数，请自行补充在「补充双倍天数」里。
     </div>
     <div class="btn-group">
         <button onclick="calculateBase()">📊 计算可得游园币</button>
@@ -130,7 +130,7 @@
         <!-- 120左上转盘 -->
         <div class="method-block">
             <div class="method-row">
-                <span class="method-name">120左上转盘 <span class="badge"> </span></span>
+                <span class="method-name">120左上转盘 <span class="badge">保底30</span></span>
                 <input type="number" class="method-input" id="topLeftTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="topLeftPity" value="30" min="1" max="30" placeholder="剩余">
@@ -143,7 +143,7 @@
         <!-- 120右上转盘 -->
         <div class="method-block">
             <div class="method-row">
-                <span class="method-name">120右上转盘 <span class="badge"> </span></span>
+                <span class="method-name">120右上转盘 <span class="badge">保底30</span></span>
                 <input type="number" class="method-input" id="topRightTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="topRightPity" value="30" min="1" max="30" placeholder="剩余">
@@ -156,7 +156,7 @@
         <!-- 300左下转盘 -->
         <div class="method-block">
             <div class="method-row">
-                <span class="method-name">300左下转盘 <span class="badge"> </span></span>
+                <span class="method-name">300左下转盘 <span class="badge">保底40</span></span>
                 <input type="number" class="method-input" id="bottomLeftTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="bottomLeftPity" value="40" min="1" max="40" placeholder="剩余">
@@ -169,7 +169,7 @@
         <!-- 80右下转盘 -->
         <div class="method-block">
             <div class="method-row">
-                <span class="method-name">80右下转盘 <span class="badge"> </span></span>
+                <span class="method-name">80右下转盘 <span class="badge">保底20</span></span>
                 <input type="number" class="method-input" id="bottomRightTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="bottomRightPity" value="20" min="1" max="20" placeholder="剩余">
@@ -207,11 +207,11 @@
             <span class="result-value" id="balloonIntegral">0</span>
         </div>
         <div class="result-item" style="border-top:1px dashed #cbd5e1; padding-top:10px;">
-            <span class="result-label">🪙 剩余游园币</span>
+            <span class="result-label">💵 剩余游园币</span>
             <span class="result-value highlight" id="remainCoins">-</span>
         </div>
         <div class="result-item">
-            <span class="result-label">💵 最终积分</span>
+            <span class="result-label">⭐ 最终积分</span>
             <span class="result-value highlight" id="finalIntegral">-</span>
         </div>
     </div>
@@ -222,11 +222,11 @@
 </div>
 
 <script>
-    // 节假日
+    // 节假日双倍区间（已更新二周年庆为 8.7-8.23）
     const holidays = [
-        { start: new Date(2026, 4, 1), end: new Date(2026, 4, 10) },
-        { start: new Date(2026, 7, 8), end: new Date(2026, 7, 24) },
-        { start: new Date(2026, 8, 26), end: new Date(2026, 9, 8) }
+        { start: new Date(2026, 4, 1), end: new Date(2026, 4, 10) },    // 五一：5/1-5/10
+        { start: new Date(2026, 7, 7), end: new Date(2026, 7, 23) },    // 二周年庆：8/7-8/23
+        { start: new Date(2026, 8, 26), end: new Date(2026, 9, 8) }     // 国庆：9/26-10/8
     ];
 
     const gachaConfig = {
@@ -267,7 +267,7 @@
             cost: 300, maxPity: 40,
             items: [
                 { name: '积分x8888', prob: 0.02, integral: 8888, grand: true },
-                { name: '电馅儿杆', prob: 0.06, integral: 0 },
+                { name: '电馅/杆', prob: 0.06, integral: 0 },
                 { name: '积分x3288', prob: 0.08, integral: 3288 },
                 { name: '积分x2688', prob: 0.15, integral: 2688 },
                 { name: '恢复药剂X2', prob: 0.19, integral: 0 },
@@ -458,11 +458,8 @@
         updateSummary();
     }
 
-    // 重置所有
     function resetAll() {
-        // 重置日期为跟随系统
         initDates();
-        // 重置所有输入
         document.getElementById('a').value = 0;
         document.getElementById('b').value = 0;
         document.getElementById('D').value = 0;
@@ -470,20 +467,16 @@
         document.getElementById('G').value = 0;
         document.getElementById('H').value = 0;
         document.getElementById('resTotalDays').textContent = '-';
-        // 清空结果面板隐藏
         document.getElementById('resultPanel').style.display = 'none';
-        // 重置保底
         document.getElementById('topLeftPity').value = gachaConfig.topLeft.maxPity;
         document.getElementById('topRightPity').value = gachaConfig.topRight.maxPity;
         document.getElementById('bottomLeftPity').value = gachaConfig.bottomLeft.maxPity;
         document.getElementById('bottomRightPity').value = gachaConfig.bottomRight.maxPity;
-        // 清空次数及获得物
         ['topLeftTimes','topRightTimes','bottomLeftTimes','bottomRightTimes','balloonTimes'].forEach(id => document.getElementById(id).value = 0);
         ['topLeftLoot','topRightLoot','bottomLeftLoot','bottomRightLoot'].forEach(id => {
             document.getElementById(id).innerHTML = '';
             document.getElementById(id).classList.remove('active');
         });
-        // 重置全局变量
         totalCoins = 0;
         remainCoins = 0;
         gachaSpent = 0;
@@ -494,8 +487,8 @@
     }
 
     function initDates() {
-        const minDate = new Date(2026, 4, 1);  // 2026-05-01
-        const maxDate = new Date(2026, 11, 31); // 2026-12-31
+        const minDate = new Date(2026, 4, 1);
+        const maxDate = new Date(2026, 11, 31);
         const today = new Date();
         let start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         if (start < minDate) start = minDate;
