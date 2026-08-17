@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0">
-    <title>积分计算器（jijienen2026版）</title>
+    <title>积分计算器（jijienen 2026-2027版）</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -71,7 +71,6 @@
             display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;
         }
         .method-name { font-weight: 600; font-size: 0.9rem; min-width: 90px; }
-        .method-input { width: 65px; text-align: center; }
         .pity-input { width: 55px; text-align: center; }
         .badge { font-size: 0.75rem; color: #3b82f6; background: #eff6ff; padding: 2px 8px; border-radius: 20px; }
         .loot-box {
@@ -81,20 +80,72 @@
         }
         .loot-box.active { display: block; }
         .loot-item { padding: 3px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .loot-item span:last-child { color: #475569; }
         .confirm-btn { background: #10b981; }
         .confirm-btn:hover { background: #059669; }
         .btn-group { display: flex; gap: 10px; }
         .btn-group button { flex: 1; }
+
+        /* 转盘容器与指针 */
+        .wheel-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 18px solid #ef4444;
+            z-index: 10;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        }
+        .wheel {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#ffd700 0deg 60deg, #ff8c00 60deg 120deg, #32cd32 120deg 180deg,
+                        #1e90ff 180deg 240deg, #ff69b4 240deg 300deg, #9370db 300deg 360deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: transform 2s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        .wheel span {
+            position: absolute;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            transform: rotate(calc((var(--i) + 0.5) * 60deg)) translateY(-38px) rotate(calc(-1 * (var(--i) + 0.5) * 60deg));
+            white-space: nowrap;
+        }
+        .wheel::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
 <div class="card">
     <h1>🎈 积分计算器</h1>
-    <div class="subtitle">jijienen2026 版</div>
+    <div class="subtitle">jijienen 2026-2027 版</div>
 
-    <div class="form-group"><label>起始日期</label><input type="date" id="startDate" min="2026-05-01" max="2026-12-31"></div>
-    <div class="form-group"><label>结束日期</label><input type="date" id="endDate" min="2026-05-01" max="2026-12-31"></div>
+    <div class="form-group"><label>起始日期</label><input type="date" id="startDate" min="2026-05-01" max="2027-12-31"></div>
+    <div class="form-group"><label>结束日期</label><input type="date" id="endDate" min="2026-05-01" max="2027-12-31"></div>
     <div class="total-days-box">📅 总天数：<span id="resTotalDays">-</span> 天</div>
     <div class="date-hint">⚠️ 默认当天未领取，若已领取，请将起始日期改为后一天。</div>
 
@@ -111,7 +162,7 @@
         <div class="form-group"><label>战令氪金档位天数</label><input type="number" id="H" value="0" min="0"></div>
     </div>
     <div class="hint">
-        💡 目前只考虑了五一、二周年庆、国庆的双倍。如有其他双倍天数，请自行补充在「补充双倍天数」里。
+        💡 目前考虑了2026年五一、二周年庆、国庆，以及2027年元旦、过年、劳动节、三周年庆、国庆的双倍。如有其他双倍天数，请自行补充在「补充双倍天数」里。
     </div>
     <div class="btn-group">
         <button onclick="calculateBase()">📊 计算可得游园币</button>
@@ -124,18 +175,24 @@
             <span class="result-value" id="resCoin">-</span>
         </div>
 
-        <div class="section-title">🎯 选择积分获取方式（输入次数）</div>
+        <div class="section-title">🎯 选择积分获取方式（单抽/10连）</div>
         <div class="random-note">【转盘具有随机性，请勿当真】</div>
 
         <!-- 120左上转盘 -->
         <div class="method-block">
             <div class="method-row">
                 <span class="method-name">120左上转盘 <span class="badge">保底30</span></span>
-                <input type="number" class="method-input" id="topLeftTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="topLeftPity" value="30" min="1" max="30" placeholder="剩余">
-                <button class="btn-sm confirm-btn" onclick="confirmGacha('topLeft')">确认</button>
-                <button class="btn-sm btn-warn" onclick="soloAllIn('topLeft')">梭哈</button>
+                <button class="btn-sm btn-warn" onclick="singleDrawAnim('topLeft')">单抽</button>
+                <button class="btn-sm confirm-btn" onclick="multiDraw('topLeft',10)">10连</button>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel_topLeft" data-angle="0">
+                    <span style="--i:0">自行车</span><span style="--i:1">开山刀</span><span style="--i:2">1666</span>
+                    <span style="--i:3">喷雾</span><span style="--i:4">零件</span><span style="--i:5">888</span>
+                </div>
             </div>
             <div class="loot-box" id="topLeftLoot"></div>
         </div>
@@ -144,11 +201,17 @@
         <div class="method-block">
             <div class="method-row">
                 <span class="method-name">120右上转盘 <span class="badge">保底30</span></span>
-                <input type="number" class="method-input" id="topRightTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="topRightPity" value="30" min="1" max="30" placeholder="剩余">
-                <button class="btn-sm confirm-btn" onclick="confirmGacha('topRight')">确认</button>
-                <button class="btn-sm btn-warn" onclick="soloAllIn('topRight')">梭哈</button>
+                <button class="btn-sm btn-warn" onclick="singleDrawAnim('topRight')">单抽</button>
+                <button class="btn-sm confirm-btn" onclick="multiDraw('topRight',10)">10连</button>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel_topRight" data-angle="0">
+                    <span style="--i:0">阿瓦普步枪</span><span style="--i:1">2666</span><span style="--i:2">药剂</span>
+                    <span style="--i:3">1666</span><span style="--i:4">零件箱</span><span style="--i:5">666</span>
+                </div>
             </div>
             <div class="loot-box" id="topRightLoot"></div>
         </div>
@@ -157,11 +220,17 @@
         <div class="method-block">
             <div class="method-row">
                 <span class="method-name">300左下转盘 <span class="badge">保底40</span></span>
-                <input type="number" class="method-input" id="bottomLeftTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="bottomLeftPity" value="40" min="1" max="40" placeholder="剩余">
-                <button class="btn-sm confirm-btn" onclick="confirmGacha('bottomLeft')">确认</button>
-                <button class="btn-sm btn-warn" onclick="soloAllIn('bottomLeft')">梭哈</button>
+                <button class="btn-sm btn-warn" onclick="singleDrawAnim('bottomLeft')">单抽</button>
+                <button class="btn-sm confirm-btn" onclick="multiDraw('bottomLeft',10)">10连</button>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel_bottomLeft" data-angle="0">
+                    <span style="--i:0">8888</span><span style="--i:1">皇帝的新枪</span><span style="--i:2">3288</span>
+                    <span style="--i:3">2688</span><span style="--i:4">药剂X2</span><span style="--i:5">1288</span>
+                </div>
             </div>
             <div class="loot-box" id="bottomLeftLoot"></div>
         </div>
@@ -170,11 +239,17 @@
         <div class="method-block">
             <div class="method-row">
                 <span class="method-name">80右下转盘 <span class="badge">保底20</span></span>
-                <input type="number" class="method-input" id="bottomRightTimes" value="0" min="0" placeholder="次数">
                 <span style="font-size:0.8rem;">保底剩余：</span>
                 <input type="number" class="pity-input" id="bottomRightPity" value="20" min="1" max="20" placeholder="剩余">
-                <button class="btn-sm confirm-btn" onclick="confirmGacha('bottomRight')">确认</button>
-                <button class="btn-sm btn-warn" onclick="soloAllIn('bottomRight')">梭哈</button>
+                <button class="btn-sm btn-warn" onclick="singleDrawAnim('bottomRight')">单抽</button>
+                <button class="btn-sm confirm-btn" onclick="multiDraw('bottomRight',10)">10连</button>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel_bottomRight" data-angle="0">
+                    <span style="--i:0">海洋之鹰</span><span style="--i:1">1266</span><span style="--i:2">狂暴药剂</span>
+                    <span style="--i:3">888</span><span style="--i:4">零件箱</span><span style="--i:5">666</span>
+                </div>
             </div>
             <div class="loot-box" id="bottomRightLoot"></div>
         </div>
@@ -183,7 +258,7 @@
         <div class="method-block">
             <div class="method-row">
                 <span class="method-name">🎈 打气球 <span class="badge">30币/次</span></span>
-                <input type="number" class="method-input" id="balloonTimes" value="0" min="0" placeholder="次数">
+                <input type="number" class="method-input" id="balloonTimes" value="0" min="0" placeholder="次数" style="width:70px;">
                 <button class="btn-sm confirm-btn" onclick="confirmBalloon()">确认</button>
                 <button class="btn-sm btn-warn" onclick="balloonAllIn()">全打</button>
             </div>
@@ -191,27 +266,31 @@
 
         <div class="section-title">📋 累计结果</div>
         <div class="result-item">
-            <span class="result-label">转盘累计消耗</span>
+            <span class="result-label">🪙转盘累计消耗游园币</span>
             <span class="result-value" id="gachaCost">0</span>
         </div>
         <div class="result-item">
-            <span class="result-label">转盘累计获得积分</span>
+            <span class="result-label">💵转盘累计获得积分</span>
             <span class="result-value" id="gachaIntegral">0</span>
         </div>
         <div class="result-item">
-            <span class="result-label">打气球累计消耗</span>
+            <span class="result-label">🎁 转盘累积获取道具</span>
+            <span class="result-value" id="gachaItems">无</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">🪙打气球累计消耗游园币</span>
             <span class="result-value" id="balloonCost">0</span>
         </div>
         <div class="result-item">
-            <span class="result-label">打气球累计获得积分</span>
+            <span class="result-label">💵打气球累计获得积分</span>
             <span class="result-value" id="balloonIntegral">0</span>
         </div>
         <div class="result-item" style="border-top:1px dashed #cbd5e1; padding-top:10px;">
-            <span class="result-label">💵 剩余游园币</span>
+            <span class="result-label">🪙 剩余游园币</span>
             <span class="result-value highlight" id="remainCoins">-</span>
         </div>
         <div class="result-item">
-            <span class="result-label">⭐ 最终积分</span>
+            <span class="result-label">💵 最终积分</span>
             <span class="result-value highlight" id="finalIntegral">-</span>
         </div>
     </div>
@@ -222,13 +301,19 @@
 </div>
 
 <script>
-    // 节假日双倍区间（已更新二周年庆为 8.7-8.23）
+    // 节假日双倍区间（包含2026和2027）
     const holidays = [
-        { start: new Date(2026, 4, 1), end: new Date(2026, 4, 10) },    // 五一：5/1-5/10
-        { start: new Date(2026, 7, 7), end: new Date(2026, 7, 23) },    // 二周年庆：8/7-8/23
-        { start: new Date(2026, 8, 26), end: new Date(2026, 9, 8) }     // 国庆：9/26-10/8
+        { start: new Date(2026, 4, 1), end: new Date(2026, 4, 10) },
+        { start: new Date(2026, 7, 7), end: new Date(2026, 7, 23) },
+        { start: new Date(2026, 8, 26), end: new Date(2026, 9, 8) },
+        { start: new Date(2027, 0, 1), end: new Date(2027, 0, 8) },
+        { start: new Date(2027, 0, 30), end: new Date(2027, 1, 12) },
+        { start: new Date(2027, 3, 30), end: new Date(2027, 4, 9) },
+        { start: new Date(2027, 7, 6), end: new Date(2027, 7, 22) },
+        { start: new Date(2027, 9, 1), end: new Date(2027, 9, 10) }
     ];
 
+    // 转盘配置（概率）
     const gachaConfig = {
         topLeft: {
             cost: 120, maxPity: 30,
@@ -267,7 +352,7 @@
             cost: 300, maxPity: 40,
             items: [
                 { name: '积分x8888', prob: 0.02, integral: 8888, grand: true },
-                { name: '电馅/杆', prob: 0.06, integral: 0 },
+                { name: '皇帝的新枪', prob: 0.06, integral: 0 },
                 { name: '积分x3288', prob: 0.08, integral: 3288 },
                 { name: '积分x2688', prob: 0.15, integral: 2688 },
                 { name: '恢复药剂X2', prob: 0.19, integral: 0 },
@@ -276,14 +361,18 @@
         }
     };
 
+    // 全局状态
     let totalCoins = 0;
     let remainCoins = 0;
     let gachaSpent = 0;
     let gachaIntegralAcc = 0;
+    let gachaItemsAcc = {};          // 新增：转盘累积获取道具
     let balloonSpent = 0;
     let balloonIntegralAcc = 0;
     let baseIntegral = 0;
+    let isSpinning = false;
 
+    // 日期重叠
     function overlapDays(rs, re, hs, he) {
         const s = new Date(Math.max(rs.getTime(), hs.getTime()));
         const e = new Date(Math.min(re.getTime(), he.getTime()));
@@ -291,35 +380,34 @@
         return Math.floor((e - s) / (1000*60*60*24)) + 1;
     }
 
-    function singleDraw(gachaId, remaining) {
+    // 单次抽奖，返回结果和物品索引
+    function drawOnce(gachaId, remaining) {
         const config = gachaConfig[gachaId];
         const items = config.items;
         if (remaining <= 1) {
-            const grand = items.find(i => i.grand);
-            return { integral: grand.integral, name: grand.name, grand: true, newRemaining: config.maxPity };
+            const idx = items.findIndex(i => i.grand);
+            return { integral: items[idx].integral, name: items[idx].name, grand: true, newRemaining: config.maxPity, itemIndex: idx };
         }
         const rand = Math.random();
         let cumulative = 0;
-        for (let item of items) {
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
             cumulative += item.prob;
             if (rand < cumulative) {
-                if (item.grand) {
-                    return { integral: item.integral, name: item.name, grand: true, newRemaining: config.maxPity };
-                } else {
-                    return { integral: item.integral || 0, name: item.name, grand: false, newRemaining: remaining - 1 };
-                }
+                return { integral: item.integral || 0, name: item.name, grand: !!item.grand, newRemaining: item.grand ? config.maxPity : remaining - 1, itemIndex: i };
             }
         }
-        const last = items[items.length-1];
-        return { integral: last.integral||0, name: last.name, grand: false, newRemaining: remaining - 1 };
+        const lastIdx = items.length - 1;
+        return { integral: items[lastIdx].integral || 0, name: items[lastIdx].name, grand: false, newRemaining: remaining - 1, itemIndex: lastIdx };
     }
 
+    // 模拟多次抽奖（用于10连）
     function simulateGacha(gachaId, times, startRemaining) {
         let rem = startRemaining;
         let totalIntegral = 0;
         const results = [];
         for (let i = 0; i < times; i++) {
-            const res = singleDraw(gachaId, rem);
+            const res = drawOnce(gachaId, rem);
             totalIntegral += res.integral;
             results.push(res);
             rem = res.newRemaining;
@@ -327,17 +415,45 @@
         return { integral: totalIntegral, endRemaining: rem, results };
     }
 
+    // 累积道具
+    function accumulateItems(results) {
+        results.forEach(r => {
+            if (r.integral === 0) {
+                gachaItemsAcc[r.name] = (gachaItemsAcc[r.name] || 0) + 1;
+            }
+        });
+    }
+
+    // 更新汇总
     function updateSummary() {
         document.getElementById('gachaCost').textContent = gachaSpent.toLocaleString();
         document.getElementById('gachaIntegral').textContent = gachaIntegralAcc.toLocaleString();
+        const itemsText = Object.keys(gachaItemsAcc).length === 0 ? '无' :
+            Object.entries(gachaItemsAcc).map(([name, count]) => `${name}x${count}`).join('、');
+        document.getElementById('gachaItems').textContent = itemsText;
         document.getElementById('balloonCost').textContent = balloonSpent.toLocaleString();
         document.getElementById('balloonIntegral').textContent = balloonIntegralAcc.toLocaleString();
         document.getElementById('finalIntegral').textContent = (baseIntegral + gachaIntegralAcc + balloonIntegralAcc).toLocaleString();
         document.getElementById('remainCoins').textContent = remainCoins.toLocaleString();
     }
 
-    function confirmGacha(gachaId) {
-        const times = parseInt(document.getElementById(gachaId + 'Times').value) || 0;
+    // 显示获得物（只显示名称和数量，不显示积分附加值）
+    function displayLoot(gachaId, results) {
+        const config = gachaConfig[gachaId];
+        const lootDiv = document.getElementById(gachaId + 'Loot');
+        let html = '';
+        const countMap = {};
+        results.forEach(r => { countMap[r.name] = (countMap[r.name] || 0) + 1; });
+        for (const [name, count] of Object.entries(countMap)) {
+            html += `<div class="loot-item"><span>${name} x${count}</span></div>`;
+        }
+        lootDiv.innerHTML = html;
+        lootDiv.classList.add('active');
+    }
+
+    // 10连直接结算
+    function multiDraw(gachaId, times) {
+        if (isSpinning) return;
         if (times <= 0) return;
         const config = gachaConfig[gachaId];
         const cost = times * config.cost;
@@ -355,23 +471,67 @@
         remainCoins -= cost;
         gachaSpent += cost;
         gachaIntegralAcc += sim.integral;
+        accumulateItems(sim.results);
         pityInput.value = sim.endRemaining;
-
-        const lootDiv = document.getElementById(gachaId + 'Loot');
-        let html = '';
-        const countMap = {};
-        sim.results.forEach(r => { countMap[r.name] = (countMap[r.name] || 0) + 1; });
-        for (const [name, count] of Object.entries(countMap)) {
-            const item = config.items.find(i => i.name === name);
-            const integralPer = item ? item.integral : 0;
-            html += `<div class="loot-item"><span>${name} x${count}</span><span>+${integralPer * count}积分</span></div>`;
-        }
-        lootDiv.innerHTML = html;
-        lootDiv.classList.add('active');
-        document.getElementById(gachaId + 'Times').value = 0;
+        displayLoot(gachaId, sim.results);
         updateSummary();
     }
 
+    // 单抽：先抽结果，再旋转转盘，最后结算
+    function singleDrawAnim(gachaId) {
+        if (isSpinning) return;
+        const config = gachaConfig[gachaId];
+        const cost = config.cost;
+        if (cost > remainCoins) {
+            alert(`游园币不足！需要${cost}，剩余${remainCoins}`);
+            return;
+        }
+        const pityInput = document.getElementById(gachaId + 'Pity');
+        let startPity = parseInt(pityInput.value) || config.maxPity;
+        if (startPity < 1 || startPity > config.maxPity) {
+            alert(`保底剩余次数必须在1到${config.maxPity}之间`);
+            return;
+        }
+
+        // 抽一次
+        const result = drawOnce(gachaId, startPity);
+
+        // 锁定
+        isSpinning = true;
+
+        // 计算旋转角度
+        const wheel = document.getElementById('wheel_' + gachaId);
+        const currentAngle = parseInt(wheel.dataset.angle) || 0;
+        const itemIndex = result.itemIndex;
+        const sectorAngle = 60;
+        const baseAngle = 30 + itemIndex * sectorAngle;
+        const targetMod = (360 - (baseAngle % 360)) % 360;
+        let finalAngle = Math.ceil((currentAngle - targetMod) / 360) * 360 + targetMod;
+        while (finalAngle <= currentAngle + 360 * 4) finalAngle += 360;
+
+        wheel.style.transform = `rotate(${finalAngle}deg)`;
+        wheel.dataset.angle = finalAngle;
+
+        // 动画结束后结算
+        setTimeout(() => {
+            wheel.style.transition = 'none';
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            requestAnimationFrame(() => {
+                wheel.style.transition = 'transform 2s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            });
+
+            remainCoins -= cost;
+            gachaSpent += cost;
+            gachaIntegralAcc += result.integral;
+            accumulateItems([result]);
+            pityInput.value = result.newRemaining;
+            displayLoot(gachaId, [result]);
+            updateSummary();
+            isSpinning = false;
+        }, 2000);
+    }
+
+    // 打气球确认
     function confirmBalloon() {
         const times = parseInt(document.getElementById('balloonTimes').value) || 0;
         if (times <= 0) return;
@@ -387,17 +547,7 @@
         updateSummary();
     }
 
-    function soloAllIn(gachaId) {
-        const config = gachaConfig[gachaId];
-        const maxTimes = Math.floor(remainCoins / config.cost);
-        if (maxTimes <= 0) {
-            alert('游园币不足以抽一次');
-            return;
-        }
-        document.getElementById(gachaId + 'Times').value = maxTimes;
-        confirmGacha(gachaId);
-    }
-
+    // 打气球全打
     function balloonAllIn() {
         const maxTimes = Math.floor(remainCoins / 30);
         if (maxTimes <= 0) {
@@ -408,6 +558,7 @@
         confirmBalloon();
     }
 
+    // 基础计算
     function calculateBase() {
         const startDate = new Date(document.getElementById('startDate').value + 'T00:00:00');
         const endDate = new Date(document.getElementById('endDate').value + 'T00:00:00');
@@ -439,6 +590,7 @@
 
         gachaSpent = 0;
         gachaIntegralAcc = 0;
+        gachaItemsAcc = {};   // 重置道具累积
         balloonSpent = 0;
         balloonIntegralAcc = 0;
 
@@ -447,17 +599,29 @@
         document.getElementById('bottomLeftPity').value = gachaConfig.bottomLeft.maxPity;
         document.getElementById('bottomRightPity').value = gachaConfig.bottomRight.maxPity;
 
-        ['topLeftTimes','topRightTimes','bottomLeftTimes','bottomRightTimes','balloonTimes'].forEach(id => document.getElementById(id).value = 0);
+        document.getElementById('balloonTimes').value = 0;
+
         ['topLeftLoot','topRightLoot','bottomLeftLoot','bottomRightLoot'].forEach(id => {
             document.getElementById(id).innerHTML = '';
             document.getElementById(id).classList.remove('active');
         });
+
+        document.querySelectorAll('.wheel').forEach(w => {
+            w.dataset.angle = 0;
+            w.style.transition = 'none';
+            w.style.transform = 'rotate(0deg)';
+            requestAnimationFrame(() => {
+                w.style.transition = 'transform 2s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            });
+        });
+        isSpinning = false;
 
         document.getElementById('resCoin').textContent = c.toLocaleString();
         document.getElementById('resultPanel').style.display = 'block';
         updateSummary();
     }
 
+    // 重置所有
     function resetAll() {
         initDates();
         document.getElementById('a').value = 0;
@@ -472,23 +636,34 @@
         document.getElementById('topRightPity').value = gachaConfig.topRight.maxPity;
         document.getElementById('bottomLeftPity').value = gachaConfig.bottomLeft.maxPity;
         document.getElementById('bottomRightPity').value = gachaConfig.bottomRight.maxPity;
-        ['topLeftTimes','topRightTimes','bottomLeftTimes','bottomRightTimes','balloonTimes'].forEach(id => document.getElementById(id).value = 0);
+        document.getElementById('balloonTimes').value = 0;
         ['topLeftLoot','topRightLoot','bottomLeftLoot','bottomRightLoot'].forEach(id => {
             document.getElementById(id).innerHTML = '';
             document.getElementById(id).classList.remove('active');
         });
+        document.querySelectorAll('.wheel').forEach(w => {
+            w.dataset.angle = 0;
+            w.style.transition = 'none';
+            w.style.transform = 'rotate(0deg)';
+            requestAnimationFrame(() => {
+                w.style.transition = 'transform 2s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            });
+        });
+        isSpinning = false;
         totalCoins = 0;
         remainCoins = 0;
         gachaSpent = 0;
         gachaIntegralAcc = 0;
+        gachaItemsAcc = {};
         balloonSpent = 0;
         balloonIntegralAcc = 0;
         baseIntegral = 0;
     }
 
+    // 初始化日期
     function initDates() {
         const minDate = new Date(2026, 4, 1);
-        const maxDate = new Date(2026, 11, 31);
+        const maxDate = new Date(2027, 11, 31);
         const today = new Date();
         let start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         if (start < minDate) start = minDate;
