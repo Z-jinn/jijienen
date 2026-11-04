@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>怪物图鉴 · Jinn Box</title>
+<style>
+  /* ===== 基础重置与页面布局 ===== */
+  body { 
+    margin: 0; 
+    padding: 115px 20px 20px !important; /* 留出顶部导航的高度 */
+    background: #1a1b23; 
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif; 
+    color: #333; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+  }
+  .main-wrapper { width: 100%; max-width: 750px; }
+  
+  /* ===== 搜索框 ===== */
+  .search-wrapper { margin-bottom: 20px; }
+  .search-wrapper input { 
+    width: 100%; padding: 14px 20px; border-radius: 8px; 
+    border: 1px solid #2f4052; background: #2a2b36; color: #fff; 
+    font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    outline: none; transition: 0.2s; 
+  }
+  .search-wrapper input::placeholder { color: #6a6b7c; }
+  .search-wrapper input:focus { border-color: #6a5b8e; box-shadow: 0 0 10px rgba(106, 91, 142, 0.5); }
+  
+  /* ===== 怪物列表 ===== */
+  .monster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+  .grid-item { 
+    background: #2a2b36; border: 1px solid #3b3c4a; border-radius: 10px; 
+    padding: 15px; display: flex; flex-direction: column; align-items: center; 
+    cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+  }
+  .grid-item:hover { transform: translateY(-3px); border-color: #6a5b8e; box-shadow: 0 8px 20px rgba(106, 91, 142, 0.4); background: #32333f; }
+  .grid-img-box { width: 80px; height: 80px; background: #1a1b23; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .grid-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .grid-img-box .placeholder { font-size: 12px; color: #6a6b7c; }
+  .grid-name { color: #fff; font-size: 14px; font-weight: bold; text-align: center; word-break: break-all; }
+  .no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #8aa0b5; font-size: 16px; background: #2a2b36; border-radius: 12px; }
+
+  /* ===== 弹窗 ===== */
+  .monster-modal { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0, 0, 0, 0.85); display: none; align-items: center; 
+    justify-content: center; z-index: 99999 !important; /* 提高层级，防被导航遮挡 */
+    padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px);
+  }
+  .monster-modal.show { display: flex; }
+  .monster-card { 
+    background: #eaebf0; border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); 
+    width: 100%; max-width: 750px; max-height: 90vh; overflow-y: auto; 
+    border: 1px solid #b0b1c0; position: relative; 
+  }
+  .monster-card::-webkit-scrollbar { width: 6px; }
+  .monster-card::-webkit-scrollbar-thumb { background: #6a5b8e; border-radius: 3px; }
+  .monster-header { background: #6a5b8e; color: #fff; text-align: center; padding: 12px; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 10; }
+  .monster-header .close-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 24px; cursor: pointer; color: #d3cae5; transition: 0.2s; }
+  .monster-header .close-btn:hover { color: #fff; }
+  
+  .monster-top { display: grid; grid-template-columns: 130px 1fr; gap: 15px; padding: 15px; background: #f4f5f9; border-bottom: 1px solid #d0d1db; }
+  .monster-img-box { width: 130px; height: 130px; background: #fff; border: 1px solid #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .monster-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .monster-img-box .placeholder { font-size: 14px; color: #aaa; }
+  
+  .monster-stats { display: flex; flex-direction: column; justify-content: center; gap: 6px; font-size: 13px; }
+  .stat-item { display: flex; border-bottom: 1px dashed #d0d1db; padding-bottom: 4px; }
+  .stat-item .label { color: #666; min-width: 75px; }
+  .stat-item .value { color: #111; font-weight: bold; flex: 1; }
+  
+  .monster-section { padding: 15px; background: #eaebf0; font-size: 14px; line-height: 1.8; }
+  .monster-section:last-child { border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+  .section-title { color: #6a5b8e; font-weight: bold; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid #d0d1db; padding-bottom: 6px; }
+  
+  .skill-item { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #d0d1db; }
+  .skill-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+  .skill-name { color: #3b7bc3; font-weight: bold; display: inline-block; margin-bottom: 2px; }
+  .skill-desc { color: #444; display: block; }
+  
+  .strategy-text { color: #444; white-space: pre-wrap; }
+  .drops-text { color: #444; }
+  
+  /* ===== Jinn Box 终极统一导航栏 ===== */
+  .jinn-top-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: rgba(10,13,21,.94);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 16px;
+  }
+  .jinn-brand {
+    font-size: 22px; font-weight: 900; letter-spacing: 6px;
+    background: linear-gradient(180deg,#fff,#8ea8ff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 8px;
+  }
+  .jinn-nav {
+    display: flex; align-items: center; gap: 12px; 
+    width: 100%; max-width: 750px;
+  }
+  .jinn-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+    color: #e8ecf7 !important; font-size: 13px; font-weight: 700; 
+    text-decoration: none !important; transition: 0.2s;
+  }
+  .jinn-back:hover { background: rgba(255,255,255,.18); }
+  .jinn-page-title { font-size: 14px; font-weight: 700; color: #e8ecf7; }
+
+  @media (max-width: 600px) { 
+    .monster-top { grid-template-columns: 1fr; justify-items: center; } 
+    .monster-stats { width: 100%; } 
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 这里必须是 body 内的第一段代码 ================= -->
+<div class="jinn-top-bar">
+  <div class="jinn-brand">Jinn Box</div>
+  <div class="jinn-nav">
+    <a class="jinn-back" href="index.html">← 返回</a>
+    <span class="jinn-page-title">怪物图鉴</span>
+  </div>
+</div>
+<!-- ================================================================= -->
+
+<div class="main-wrapper">
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" placeholder="🔍 输入怪物名称进行搜索...">
+  </div>
+  <div class="monster-grid" id="monster-grid"></div>
+</div>
+
+<div class="monster-modal" id="monsterModal" onclick="if(event.target === this) closeModal()">
+  <div class="monster-card" id="modalCard"></div>
+</div>
+
+<script>
+/* =========================================================
+   怪物数据（在此处增加新怪物）
+   ========================================================= */
+const monsterData = [
+  {
+    name: "电鲨雷鸣",
+    imgUrl: "",
+    hpEasy: "简单100000/普通100000",
+    damageReduction: "30%非鞭类减免",
+    drops: "待补充",
+    skills: [
+      { name: "[技能1]", desc: "向目标跳跃，落地后对范围内的目标造成250点普通伤害并施加50%减速，之后以自身为中心对周围大范围内的目标造成3次150点普通伤害。" },
+      { name: "[技能2]", desc: "靠近目标发动一次扇形拍击，造成150点普通伤害。" },
+      { name: "[技能3]", desc: "向目标持续发射电流束，可转向，每次对路径上的目标造成150点普通伤害。" },
+      { name: "[雷电诱发的疯狂]", desc: "被动技能，自身移速大幅提升，所有攻击均会施加短暂的触电buff（雷砸落地的范围伤有概率不触发该效果）。*触电：每间隔一小段时间后受到50点雷属性额外伤害。" },
+      { name: "[天雷滚滚]", desc: "场地机制，每隔一段时间在场上随机降下落雷，对范围内的我方目标造成200点雷属性额外伤害并减速，若为敌方目标则改为恢复2000点生命值。*避雷针：当目标站在场地里的避雷针旁时，不受该效果影响。" }
+    ],
+    strategy: "1. 保持中远距离输出，注意躲开[雷砸]的落点范围，以及[雷击]的直线电流束。\n2. 当Boss靠近时，立刻向两侧闪避躲开[雷斥]的扇形拍击。\n3. [天雷滚滚]阶段，一定要迅速靠近场地里的避雷针，站在旁边可免疫落雷伤害。\n4. 被挂上触电buff后，及时使用治疗或护盾技能。\n5. 狂暴阶段移速极快，建议优先保命，利用加速技能风筝Boss。"
+  },
+  {
+    name: "[III阶Boss]光明·雷落",
+    imgUrl: "",
+    hpEasy: "180000", hpNormal: "180000",
+    attack: "100-200（普通伤害）",
+    attackType: "远程 / 范围伤害",
+    moveSpeed: "飞行",
+    damageReduction: "无（拥有威压）",
+    drops: "待补充",
+    skills: [
+      { name: "[雷电直击]", desc: "靠近目标后释放一条直线落雷，对路径上的目标造成200点普通伤害。" },
+      { name: "[狂雷轰炸]", desc: "锁定目标进行绕圈飞行，期间会不断在自身周围随机区域降下落雷，对区域内的目标造成200点普通伤害，持续一段时间。" },
+      { name: "[帝王之怒·雷]", desc: "拥有飞行，持续对靠近自身的目标造成100点普通伤害。" },
+      { name: "*飞行", desc: "免疫陷阱伤害（反正牌子上是这样写的）。" },
+      { name: "[结阵]", desc: "进入场景后，在地图边缘召唤数个电塔。" },
+      { name: "[召唤物：电塔]", desc: "血量约15000，减伤：貌似免疫武器附加的额外伤害。" },
+      { name: "[蓄能电球]", desc: "蓄力后向目标发射一个缓慢变大的电球，对接触到的目标持续造成100点普通伤害，飞行一段时间后消失。" },
+      { name: "[电能汇聚]", desc: "雷龙靠近时，若其生命值不满，则为其恢复满生命值，单次上限1200点，有冷却时间。" }
+    ],
+    strategy: "待补充"
+  },
+  {
+    name: "[III阶Boss]鲨气疼疼",
+    imgUrl: "",
+    hpEasy: "160000", hpNormal: "160000",
+    attack: "100-300（普通伤害）",
+    attackType: "近战 / 突进 / 范围伤害",
+    moveSpeed: "较高，技能结束后会瞬移",
+    damageReduction: "50%普通伤害减免（属于海怪，拥有威压）",
+    drops: "待补充",
+    skills: [
+      { name: "[鳍刃挥砍]", desc: "靠近目标后释放一次半圆挥砍，对命中的目标造成200点普通伤害。*追加攻击：若此次攻击命中了目标且其未拉开一定距离，则额外挥砍一次。" },
+      { name: "[鲨意突袭]", desc: "锁定目标蓄力后进行冲刺，对撞到的目标造成200点普通伤害，撞到目标或冲到终点时，向目标方向释放一次半圆挥砍，对命中的目标造成200点普通伤害。" },
+      { name: "[瞬息即杀]", desc: "立即瞬移并留下假身，之后出现在目标周围，对其释放一次半圆挥砍，对命中的目标造成300点普通伤害。" },
+      { name: "[鲨气刺骨]", desc: "对靠近自身的目标施加持续一定时间的鲨气疼疼buff。*鲨气疼疼：攻击力降低25%。" },
+      { name: "[狠辣的疼]", desc: "所有[挥砍]均会附加100点额外伤害，攻击命中目标时，若目标①没有[鲨印]，则施加鲨印；②有鲨印，则移除鲨印，追加300点额外伤害。*鲨印：无效果，持续时间极短。" },
+      { name: "[瞬步]", desc: "被动技能，技能结束后会消失并瞬移至随机位置，移速较高。" }
+    ],
+    strategy: "待补充"
+  },
+  {
+    name: "[III阶Boss]大雷·滚滚",
+    imgUrl: "",
+    hpEasy: "150000", hpNormal: "150000",
+    attack: "100-200（普通伤害）/ 200（雷属性伤害）",
+    attackType: "远程 / 范围伤害",
+    moveSpeed: "待补充",
+    damageReduction: "无（拥有威压）",
+    drops: "待补充",
+    skills: [
+      { name: "[扩散电球]", desc: "以自身为中心向周围扩散多个电球，电球会在沿路径移动一段距离或接触到墙体时消失，对接触到的目标造成100点普通伤害，可多判。" },
+      { name: "[鸣雷护体]", desc: "召唤5个电球在自身周围逆时针旋转，对接触到的目标造成100点普通伤害，持续一段时间后消失。PS：被摄魂时有双倍“快乐”。" },
+      { name: "[蓄能电球]", desc: "蓄力后向目标发射一个缓慢变大的电球，对接触到的目标持续造成100点普通伤害，飞行一段时间后消失。PS：是的，雷龙的雷塔也有这技能。" },
+      { name: "[电钩封锁]", desc: "召唤一个具有10000点生命值且无伤害减免的圈禁镯主导角色，期间会在圈内降下极小范围的落雷，对范围内的目标造成100点普通伤害，持续10秒后消失，圈被击破则提前消失。" },
+      { name: "[大雷滚滚]", desc: "场地机制，每隔一段时间在场上随机降下落雷，对范围内的我方目标造成200点雷属性额外伤害并减速，若为敌方目标则改为恢复2000点生命值。*避雷针：当目标站在场地里的避雷针旁时，不受该效果影响。" }
+    ],
+    strategy: "待补充"
+  }
+];
+
+function renderGrid(data = monsterData) {
+  const grid = document.getElementById('monster-grid');
+  if (!grid) return;
+  if (data.length === 0) {
+    grid.innerHTML = '<div class="no-result">未找到匹配的怪物，请尝试其他关键字。</div>';
+    return;
+  }
+  let html = '';
+  data.forEach((monster) => {
+    let imgHtml = '';
+    if (monster.imgUrl && monster.imgUrl.trim() !== "") {
+      imgHtml = `<img src="${monster.imgUrl}" alt="${monster.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'placeholder\\'>暂无图片</span>';">`;
+    } else {
+      imgHtml = `<span class="placeholder">暂无图片</span>`;
+    }
+    html += `<div class="grid-item" onclick="openMonsterDetail('${monster.name}')"><div class="grid-img-box">${imgHtml}</div><div class="grid-name">${monster.name}</div></div>`;
+  });
+  grid.innerHTML = html;
+}
+
+function openMonsterDetail(monsterName) {
+  const monster = monsterData.find(m => m.name === monsterName);
+  if (!monster) return;
+
+  let imgHtml = '';
+  if (monster.imgUrl && monster.imgUrl.trim() !== "") {
+    imgHtml = `<img src="${monster.imgUrl}" alt="${monster.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'placeholder\\'>暂无图片</span>';">`;
+  } else {
+    imgHtml = `<span class="placeholder">暂无图片</span>`;
+  }
+
+  let statsHtml = `
+    <div class="stat-item"><span class="label">血量</span><span class="value">${monster.hp || '--'}</span></div>
+    <div class="stat-item"><span class="label">攻击力</span><span class="value">${monster.attack || '--'}</span></div>
+    <div class="stat-item"><span class="label">减伤</span><span class="value">${monster.damageReduction || '--'}</span></div>
+  `;
+
+  let skillsHtml = '';
+  if (monster.skills && monster.skills.length > 0) {
+    monster.skills.forEach((s) => {
+      skillsHtml += `<div class="skill-item"><span class="skill-name">${s.name}</span><span class="skill-desc">${s.desc}</span></div>`;
+    });
+  } else {
+    skillsHtml = '<div class="skill-item" style="color:#999;">暂无技能信息</div>';
+  }
+
+  let dropsHtml = '';
+  if (monster.drops) {
+    dropsHtml = `<div class="drops-text">${monster.drops.replace(/\n/g, '<br>')}</div>`;
+  } else {
+    dropsHtml = '<div class="drops-text" style="color:#999;">暂无掉落物</div>';
+  }
+
+  let strategyHtml = '';
+  if (monster.strategy) {
+    let formattedStrategy = monster.strategy.replace(/\n/g, '<br>');
+    strategyHtml = `<div class="strategy-text">${formattedStrategy}</div>`;
+  } else {
+    strategyHtml = '<div class="strategy-text" style="color:#999;">暂无打法建议</div>';
+  }
+
+  const modalCard = document.getElementById('modalCard');
+  modalCard.innerHTML = `
+    <div class="monster-header">${monster.name}<span class="close-btn" onclick="closeModal()">×</span></div>
+    <div class="monster-top">
+      <div class="monster-img-box">${imgHtml}</div>
+      <div class="monster-stats">${statsHtml}</div>
+    </div>
+    <div class="monster-section">
+      <div class="section-title">技能详情</div>
+      ${skillsHtml}
+    </div>
+    <div class="monster-section" style="border-top: 1px solid #d0d1db; padding-top: 15px;">
+      <div class="section-title">掉落物</div>
+      ${dropsHtml}
+    </div>
+    <div class="monster-section" style="border-top: 1px solid #d0d1db; padding-top: 15px;">
+      <div class="section-title">打法建议</div>
+      ${strategyHtml}
+    </div>
+  `;
+
+  document.getElementById('monsterModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('monsterModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  const keyword = e.target.value.toLowerCase().trim();
+  const filteredData = monsterData.filter(monster => monster.name.toLowerCase().includes(keyword));
+  renderGrid(filteredData);
+});
+
+window.onload = () => renderGrid();
+</script>
+
+</body>
+</html>

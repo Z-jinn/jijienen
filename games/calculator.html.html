@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0">
+    <title>积分计算器（jijienen 2026-2027版）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fb; display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 16px;
+        }
+        .card {
+            background: white; border-radius: 24px; padding: 24px 20px;
+            max-width: 600px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        h1 { font-size: 1.8rem; font-weight: 700; color: #1e293b; text-align: center; }
+        .subtitle { text-align: center; font-size: 0.9rem; color: #64748b; margin-bottom: 24px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-weight: 600; font-size: 0.9rem; color: #334155; margin-bottom: 4px; }
+        .row { display: flex; gap: 12px; }
+        .row .form-group { flex: 1; }
+        input, select {
+            width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0;
+            border-radius: 12px; font-size: 1rem; background: #f8fafc; outline: none;
+        }
+        input:focus, select:focus { border-color: #3b82f6; background: white; }
+        button {
+            padding: 12px; background: #3b82f6; color: white; border: none;
+            border-radius: 14px; font-size: 1rem; font-weight: 600; margin-top: 10px; cursor: pointer;
+        }
+        button:hover { background: #2563eb; }
+        .btn-reset { background: #ef4444; }
+        .btn-reset:hover { background: #dc2626; }
+        .result-box { background: #f8fafc; border-radius: 18px; padding: 18px; margin-top: 20px; }
+        .result-item { display: flex; justify-content: space-between; font-size: 1rem; margin-bottom: 10px; color: #1e293b; }
+        .result-label { color: #475569; }
+        .result-value { font-weight: 600; }
+        .section-title {
+            font-weight: 700; font-size: 1rem; color: #1e293b; margin: 16px 0 10px;
+            padding-top: 12px; border-top: 1px dashed #cbd5e1;
+        }
+        .highlight { font-weight: 700; font-size: 1.2rem; color: #0f172a; }
+        .total-days-box {
+            font-size: 0.95rem; color: #1e293b; margin: 6px 0 12px;
+            background: #f1f5f9; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 6px;
+        }
+        .date-hint { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
+        .hint {
+            font-size: 0.8rem; color: #64748b; margin: 8px 0 12px;
+            background: #f8fafc; padding: 10px 12px; border-radius: 10px; border-left: 3px solid #3b82f6;
+        }
+        .footer { margin-top: 24px; text-align: center; font-size: 0.8rem; color: #94a3b8; line-height: 1.6; }
+        .profit-positive { color: #16a34a; font-weight: 700; }
+        .profit-negative { color: #dc2626; font-weight: 700; }
+
+        .actual-area { background: #f1f5f9; border-radius: 12px; padding: 12px; margin-top: 12px; }
+        .compare-block {
+            background: #fff; border-radius: 10px; padding: 10px 12px; margin-top: 10px;
+            font-size: 0.9rem; line-height: 1.8; border: 1px solid #e2e8f0;
+        }
+        .compare-title { font-weight: 700; color: #1e293b; margin-bottom: 4px; font-size: 0.95rem; }
+        .compare-block .result-label { font-size: 0.9rem; }
+
+        /* 希望兑换摘要 */
+        .exchange-summary { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
+
+        /* 模态框基础样式 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1e293b; border-radius: 24px; padding: 24px; width: 95%; max-width: 440px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: white; position: relative;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; background: transparent; border: none;
+            color: #94a3b8; font-size: 1.5rem; cursor: pointer; padding: 0; margin: 0;
+        }
+        .modal-close:hover { color: white; }
+
+        /* 弹窗内输入框适配暗色主题 */
+        .modal-content input[type="number"], .modal-content input[type="date"] {
+            background: #334155; border-color: #475569; color: white;
+        }
+        .modal-content input[type="number"]:focus, .modal-content input:focus {
+            border-color: #3b82f6;
+        }
+        .modal-content label { color: #cbd5e1; }
+        .modal-content ::-webkit-scrollbar { width: 6px; }
+        .modal-content ::-webkit-scrollbar-track { background: #1e293b; }
+        .modal-content ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+        /* 转盘选择界面 */
+        .gacha-menu-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 20px;
+        }
+        .gacha-menu-btn {
+            background: #334155; border: 2px solid #475569; border-radius: 16px; padding: 16px 10px;
+            color: white; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+        }
+        .gacha-menu-btn:hover { background: #475569; transform: translateY(-2px); border-color: #3b82f6; }
+        .gacha-menu-btn span { font-size: 0.75rem; color: #cbd5e1; font-weight: normal; }
+
+        /* 高级转盘界面 */
+        .wheel-play-area {
+            display: flex; flex-direction: column; align-items: center; width: 100%;
+            background: #151720; border-radius: 20px; padding: 24px 20px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .wheel-container {
+            position: relative; width: 320px; height: 320px;
+            display: flex; justify-content: center; align-items: center; margin-bottom: 20px;
+        }
+
+        .outer-ring {
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            background: radial-gradient(circle at 50% 50%, #b0b5c5 40%, #6b7280 80%, #374151 100%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,255,255,0.4);
+            display: flex; justify-content: center; align-items: center;
+            border: 4px solid #111827;
+        }
+
+        .inner-wheel {
+            width: 276px; height: 276px; border-radius: 50%; position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9); overflow: hidden;
+        }
+
+        .inner-wheel::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: repeating-conic-gradient(transparent 0deg 59deg, rgba(255, 255, 255, 0.3) 59deg 60deg);
+            pointer-events: none; z-index: 2;
+        }
+
+        .light-dot {
+            position: absolute; width: 16px; height: 16px; border-radius: 50%;
+            top: 50%; left: 50%; margin-top: -8px; margin-left: -8px;
+            box-shadow: 0 0 12px currentColor, inset 0 -2px 4px rgba(0,0,0,0.5);
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+        .dot-red { background: #ff3b30; color: #ff3b30; }
+        .dot-yellow { background: #ffcc00; color: #ffcc00; }
+        .dot-cyan { background: #00e5ff; color: #00e5ff; }
+        .dot-white { background: #e5e7eb; color: #e5e7eb; }
+
+        .sector-item {
+            position: absolute; top: 0; left: 50%; width: 120px; height: 138px;
+            margin-left: -60px; transform-origin: bottom center; z-index: 3;
+        }
+        .sector-content { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .text-black { color: #111827; font-size: 13px; font-weight: 900; line-height: 1.2; }
+        .text-white { color: #f8fafc; font-size: 13px; font-weight: 900; line-height: 1.2; text-shadow: 1px 1px 2px #000; }
+
+        .center-cap {
+            position: absolute; width: 80px; height: 80px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #f1f5f9, #94a3b8, #475569);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8), inset 0 -3px 8px rgba(0,0,0,0.5), inset 0 3px 8px rgba(255,255,255,0.8);
+            display: flex; justify-content: center; align-items: center; z-index: 10; border: 2px solid #cbd5e1;
+        }
+        .center-cap::after {
+            content: ''; width: 48px; height: 48px; border-radius: 50%; border: 3px solid rgba(0,0,0,0.15);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), 0 2px 4px rgba(255,255,255,0.5);
+            background: radial-gradient(circle at 50% 50%, #cbd5e1, #64748b);
+        }
+
+        .pointer {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            width: 24px; height: 130px;
+            background: linear-gradient(to right, #94a3b8, #ffffff, #94a3b8);
+            clip-path: polygon(50% 0%, 100% 90%, 70% 100%, 30% 100%, 0% 90%);
+            z-index: 11; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.7));
+        }
+        .pointer::after {
+            content: ''; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            width: 8px; height: 30px; background: #ef4444; border-radius: 4px;
+        }
+
+        .wheel-actions { display: flex; gap: 16px; margin-top: 10px; }
+        .action-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 140px; height: 56px; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.2); transition: transform 0.1s;
+        }
+        .action-btn:active { transform: scale(0.96); }
+        
+        .btn-purple { background: linear-gradient(180deg, #7c3aed, #4c1d95); }
+        .btn-purple .btn-cost { color: #c4b5fd; font-size: 12px; margin-bottom: 2px; }
+        .btn-purple .btn-title { color: #fff; font-size: 16px; font-weight: bold; }
+        
+        .btn-gold { background: linear-gradient(180deg, #f59e0b, #b45309); }
+        .btn-gold .btn-cost { color: #fde68a; font-size: 12px; margin-bottom: 2px; }
+        .btn-gold .btn-title { color: #fff; font-size: 16px; font-weight: bold; }
+
+        .pity-container { margin-top: 16px; text-align: center; width: 100%; }
+        .pity-text { 
+            font-size: 16px; color: #e2e8f0; font-weight: bold; 
+            display: flex; justify-content: center; align-items: center; gap: 6px;
+        }
+        /* 嵌入到文本中的输入框样式 */
+        .inline-pity-input {
+            width: 60px; text-align: center; font-size: 16px; font-weight: bold; color: #ef4444;
+            background: #1e293b; border: 1px solid #475569; border-radius: 6px; outline: none; padding: 2px 4px;
+        }
+        .inline-pity-input:focus { border-color: #ef4444; }
+
+        .result-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; border-radius: 20px;
+        }
+        .result-title {
+            color: #fff; font-size: 24px; font-weight: bold; margin-bottom: 24px;
+            letter-spacing: 2px; text-shadow: 0 2px 10px rgba(255,255,255,0.3);
+        }
+        .result-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 90%; }
+        .result-item-box {
+            background: linear-gradient(180deg, #8b5cf6, #5b21b6); border: 1px solid #a78bfa; border-radius: 12px;
+            padding: 16px 20px; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 80px; min-height: 60px;
+        }
+        .result-item-box .name { color: #fff; font-size: 14px; font-weight: bold; text-align: center; line-height: 1.2; }
+        .result-hint { color: #94a3b8; font-size: 13px; margin-top: 30px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        /* 弹窗内通用按钮样式（如分类切换） */
+        .exchange-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; justify-content: center; }
+        .exchange-btn {
+            padding: 8px 14px; background: #334155; color: #e2e8f0; border: none; border-radius: 20px;
+            cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.2s;
+        }
+        .exchange-btn.active { background: #3b82f6; color: white; }
+        .exchange-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .exchange-item input[type="checkbox"] { width: 18px; height: 18px; }
+        .exchange-item label { font-size: 0.95rem; margin: 0; color: #e2e8f0; }
+    /* ===== Jinn Box 暗色主题覆盖 ===== */
+body{
+  background: radial-gradient(1200px 800px at 50% -10%,#1c2440,#0a0d15 60%) !important;
+  color:#e8ecf7 !important;
+  padding:132px 16px 40px !important;
+  align-items:flex-start !important;
+}
+.card{
+  background: rgba(255,255,255,.05) !important;
+  border:1px solid rgba(255,255,255,.1) !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45) !important;
+}
+h1{ color:#fff !important; }
+.subtitle{ color:#8b95ad !important; }
+label{ color:#cbd5e1 !important; }
+input, select{
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  color:#e8ecf7 !important;
+}
+input::placeholder{ color:#6a6b7c !important; }
+input:focus, select:focus{
+  border-color:#6a8dff !important;
+  background: rgba(255,255,255,.1) !important;
+}
+.total-days-box{
+  background: rgba(255,255,255,.06) !important;
+  color:#e8ecf7 !important;
+}
+.date-hint{ color:#8b95ad !important; }
+.hint{
+  color:#8b95ad !important;
+  background: rgba(59,130,246,.1) !important;
+  border-left-color:#3b82f6 !important;
+}
+.result-box{
+  background: rgba(255,255,255,.04) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+}
+.result-item{ color:#e8ecf7 !important; }
+.result-label{ color:#94a3b8 !important; }
+.result-value{ color:#fff !important; }
+.section-title{
+  color:#fff !important;
+  border-top-color: rgba(255,255,255,.1) !important;
+}
+.highlight{ color:#8ea8ff !important; }
+.actual-area{ background: rgba(255,255,255,.04) !important; }
+.compare-block{
+  background: rgba(255,255,255,.03) !important;
+  border-color: rgba(255,255,255,.08) !important;
+}
+.compare-title{ color:#e8ecf7 !important; }
+.exchange-summary{ border-top-color: rgba(255,255,255,.1) !important; }
+.footer{ color:#4d5566 !important; }
+.checkbox-group label{ color:#cbd5e1 !important; }
+/* 计算按钮保持蓝色，重置按钮保持红色，无需覆盖 */
+
+/* ===== Jinn Box 头部 ===== */
+.jinn-header{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:rgba(10,13,21,.94);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  text-align:center;padding:14px 0;
+}
+.jinn-brand{
+  font-size:24px;font-weight:900;letter-spacing:6px;
+  background:linear-gradient(180deg,#fff,#8ea8ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.jinn-nav{
+  position:fixed;top:60px;left:0;right:0;z-index:9998;
+  display:flex;align-items:center;gap:10px;
+  padding:8px 16px;
+  background:rgba(10,13,21,.88);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.jinn-back{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  color:#e8ecf7;font-size:13px;font-weight:700;text-decoration:none;
+  transition:background .15s;
+}
+.jinn-back:hover{background:rgba(255,255,255,.18)}
+.jinn-page-title{font-size:14px;font-weight:700;opacity:.85;color:#e8ecf7}
+.jinn-watermark{
+  position:fixed;right:16px;bottom:16px;z-index:9997;
+  font-size:12px;color:rgba(255,255,255,.15);
+  letter-spacing:2px;pointer-events:none;
+}</style>
+</head>
+<body>
+<div class="jinn-header">
+  <div class="jinn-brand">Jinn Box</div>
+</div>
+
+<div class="jinn-nav">
+  <a class="jinn-back" href="index.html">← 返回阿瑞斯病毒2</a>
+  <span class="jinn-page-title">积分计算器</span>
+</div>
+<div class="card">
+    <h1>积分计算器</h1>
+    <div class="subtitle">jijienen 2026-2027 版</div>
+
+    <div class="form-group"><label>起始日期</label><input type="date" id="startDate" min="2026-05-01" max="2027-12-31"></div>
+    <div class="form-group"><label>结束日期</label><input type="date" id="endDate" min="2026-05-01" max="2027-12-31"></div>
+    <div class="checkbox-group" style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <input type="checkbox" id="alreadyClaimed" style="width:18px; height:18px;">
+        <label for="alreadyClaimed" style="font-size:0.9rem; font-weight:500; margin:0;">当天已领取（起始日顺延一天）</label>
+    </div>
+    <div class="total-days-box">总天数：<span id="resTotalDays">-</span> 天</div>
+    <div class="date-hint">勾选代表当天已领取，不计算当天游园币</div>
+
+    <div class="row">
+        <div class="form-group"><label>已有积分</label><input type="number" id="a" value="0" min="0"></div>
+        <div class="form-group"><label>已有游园币</label><input type="number" id="b" value="0" min="0"></div>
+    </div>
+    <div class="row">
+        <div class="form-group"><label>月卡天数</label><input type="number" id="D" value="0" min="0"></div>
+        <div class="form-group"><label>假日卡天数</label><input type="number" id="E" value="0" min="0"></div>
+    </div>
+    <div class="row">
+        <div class="form-group"><label>补充双倍天数</label><input type="number" id="G" value="0" min="0"></div>
+        <div class="form-group"><label>战令氪金档位天数</label><input type="number" id="H" value="0" min="0"></div>
+    </div>
+    <div class="row">
+        <div class="form-group"><label>额外游园币获取</label><input type="number" id="extraCoins" value="0" min="0"></div>
+        <div class="form-group"></div>
+    </div>
+    <div class="hint">
+        目前考虑了2026年五一、二周年庆、国庆，以及2027年元旦、过年、劳动节、三周年庆、国庆的双倍。
+    </div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="calculateBase()" style="flex:1;">计算可得游园币</button>
+        <button class="btn-reset" onclick="resetAll()" style="flex:1;">重置</button>
+    </div>
+
+    <div class="result-box" id="resultPanel" style="display:none;">
+        <div class="result-item">
+            <span class="result-label">可得游园币</span>
+            <span class="result-value" id="resCoin">-</span>
+        </div>
+
+        <div class="section-title">转盘模拟</div>
+        <button onclick="openGachaModal()" style="width:100%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); font-size:1.1rem; padding:14px; margin-top:0;">
+            打开转盘界面
+        </button>
+
+        <!-- 打气球 -->
+        <div class="section-title">打气球模拟</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <input type="number" id="balloonTimes" value="0" min="0" style="width:80px;">
+            <button class="btn-sm" onclick="confirmBalloon()" style="margin:0; background:#10b981; padding:8px 12px; font-size:0.9rem;">确认</button>
+            <button class="btn-sm" onclick="balloonAllIn()" style="margin:0; background:#f59e0b; padding:8px 12px; font-size:0.9rem;">全打</button>
+            <span style="font-size:0.85rem; color:#64748b;">预计: <span id="balloonTime">0秒</span></span>
+        </div>
+
+        <div class="section-title">模拟结果</div>
+        <div class="result-item">
+            <span class="result-label">转盘消耗游园币</span>
+            <span class="result-value" id="gachaCost">0</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">转盘获得积分</span>
+            <span class="result-value" id="gachaIntegral">0</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">转盘获取道具</span>
+            <span class="result-value" id="gachaItems">无</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">打气球消耗游园币</span>
+            <span class="result-value" id="balloonCost">0</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">打气球获得积分</span>
+            <span class="result-value" id="balloonIntegral">0</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">打气球预计用时</span>
+            <span class="result-value" id="balloonTotalTime">0秒</span>
+        </div>
+        <div class="result-item" style="border-top:1px dashed #cbd5e1; padding-top:10px;">
+            <span class="result-label">剩余游园币</span>
+            <span class="result-value highlight" id="remainCoins">-</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label">最终积分</span>
+            <span class="result-value highlight" id="finalIntegral">-</span>
+        </div>
+
+        <!-- 实际结果对比 -->
+        <div class="section-title">实际结果对比</div>
+        <button onclick="openActualModal()" style="width:100%; background:linear-gradient(135deg,#10b981,#059669); font-size:1rem; padding:12px; margin-bottom:12px; margin-top:0;">
+            填写实际抽奖结果
+        </button>
+        <div class="actual-area" style="margin-top:0;">
+            <div class="compare-block">
+                <div class="result-item" style="margin-bottom:0;">
+                    <span class="result-label">填写的积分</span>
+                    <span class="result-value highlight" id="actualTotalIntegral">0</span>
+                </div>
+            </div>
+            <div class="compare-block">
+                <div class="result-item" style="margin-bottom:0;">
+                    <span class="result-label">填写的道具</span>
+                    <span class="result-value" id="actualPropsText" style="text-align:right; max-width:60%; word-break:break-all; font-weight:normal; color:#475569;">无</span>
+                </div>
+            </div>
+            <div class="compare-block" style="border-left:3px solid #f59e0b;">
+                <div class="result-item" style="margin-bottom:0;">
+                    <span class="result-label">全打气球的积分</span>
+                    <span class="result-value" id="pureBalloonTotalIntegral">0</span>
+                </div>
+            </div>
+            <div class="compare-block" style="border-left:3px solid #3b82f6;">
+                <div class="result-item" style="margin-bottom:0;">
+                    <span class="result-label">积分差值</span>
+                    <span class="result-value highlight" id="diffActualVsPure">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 希望兑换的物品 -->
+        <div class="section-title">希望兑换的物品</div>
+        <button onclick="openExchangeModal()" style="width:100%; background:linear-gradient(135deg,#f59e0b,#d97706); font-size:1rem; padding:12px; margin-bottom:12px; margin-top:0;">
+            选择希望兑换的物品
+        </button>
+        <div class="exchange-summary" style="margin-top:0;">
+            <div class="result-item">
+                <span class="result-label">已选物品</span>
+                <span class="result-value" id="selectedItemsSummary" style="text-align:right; max-width:60%; word-break:break-all;">无</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">所需总积分</span>
+                <span class="result-value" id="desiredCost">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">当前积分</span>
+                <span class="result-value" id="currentIntegralForDesired">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">差值</span>
+                <span class="result-value highlight" id="differenceDesired">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        由 B站吉恩上将 制作<br>若有帮助，点点关注<br>若有问题，也可指出
+    </div>
+</div>
+
+<!-- 实际结果填写弹窗 -->
+<div class="modal" id="actualModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <button class="modal-close" onclick="closeActualModal()">×</button>
+        <h2 style="margin-bottom:16px; color:#f8fafc;">填写实际结果</h2>
+        <div style="width:100%; text-align:left;">
+            <div style="margin-bottom:12px;">
+                <label style="color:#cbd5e1; display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="useSimResult" onchange="toggleActualInput()" style="width:18px; height:18px;"> 采用模拟结果（自动填入）
+                </label>
+            </div>
+            <div id="actualInputArea" style="max-height: 60vh; overflow-y: auto; padding-right: 8px;">
+                
+                <!-- 实际转盘次数分类填写 -->
+                <div style="font-weight:600; margin-bottom:8px; color:#e2e8f0;">实际转盘抽奖次数</div>
+                <div class="exchange-buttons" id="actualGachaButtons"></div>
+                <div id="actualGachaCountContainer" style="margin-bottom:16px;"></div>
+
+                <div style="font-weight:600; margin-bottom:8px; color:#e2e8f0; margin-top:16px;">获得积分</div>
+                <div id="actualItemsContainer"></div>
+                
+                <div style="font-weight:600; margin-bottom:8px; color:#e2e8f0; margin-top:16px;">获得道具</div>
+                <div id="actualPropsInputContainer"></div>
+                
+                <div style="font-weight:600; margin-bottom:8px; color:#e2e8f0; margin-top:16px;">打气球</div>
+                <div class="form-group">
+                    <label>实际打气球次数</label>
+                    <input type="number" id="actualBalloonTimes" value="0" min="0" oninput="calcActual()">
+                </div>
+            </div>
+            <button onclick="closeActualModal()" style="width:100%; margin-top:20px; background:#10b981;">确认并关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 希望兑换物品弹窗 -->
+<div class="modal" id="exchangeModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <button class="modal-close" onclick="closeExchangeModal()">×</button>
+        <h2 style="margin-bottom:16px; color:#f8fafc;">选择希望兑换的物品</h2>
+        <div style="width:100%; max-height: 60vh; overflow-y: auto; padding-right: 8px;">
+            <div class="exchange-buttons" id="exchangeButtons"></div>
+            <div id="exchangeItemsContainer" style="margin-top: 12px;"></div>
+        </div>
+        <button onclick="closeExchangeModal()" style="width:100%; margin-top:20px; background:#f59e0b;">确认并关闭</button>
+    </div>
+</div>
+
+<!-- 转盘弹窗 -->
+<div class="modal" id="gachaModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeGachaModal()">×</button>
+        
+        <!-- 菜单视图 -->
+        <div id="gachaMenuView" style="width:100%; text-align:center;">
+            <h2 style="margin-bottom:8px; color:#f8fafc;">选择模拟转盘</h2>
+            <div class="gacha-menu-grid">
+                <button class="gacha-menu-btn" onclick="openWheel('topLeft')">120 左上转盘 <span>女王鞭/开山刀/蝴蝶刀</span></button>
+                <button class="gacha-menu-btn" onclick="openWheel('topRight')">120 右上转盘 <span>阿瓦普步枪/影棘/无坚不摧</span></button>
+                <button class="gacha-menu-btn" onclick="openWheel('bottomRight')">80 右下转盘 <span>海洋之鹰/尼格尔军刀/尚方宝剑</span></button>
+                <button class="gacha-menu-btn" onclick="openWheel('bottomLeft')">300 左下转盘 <span>皇帝的新枪/麦克雷电/电馅儿杆</span></button>
+                <button class="gacha-menu-btn" style="grid-column: span 2; border-color: #fbbf24;" onclick="openWheel('limited')">限定转盘 <span>蛙·好弓</span></button>
+            </div>
+        </div>
+
+        <!-- 具体转盘视图 -->
+        <div id="wheelPlayView" style="display:none; width:100%; flex-direction:column; align-items:center;">
+            <div class="wheel-play-area">
+                <div class="wheel-title" id="wheelTitle" style="margin-bottom:16px; color:#fff; font-weight:bold; font-size:1.1rem;"></div>
+                
+                <div class="wheel-container">
+                    <div class="outer-ring">
+                        <div id="wheelLights"></div>
+                        <div class="inner-wheel" id="wheelInner"></div>
+                        <div class="center-cap"></div>
+                        <div class="pointer"></div>
+                    </div>
+                </div>
+                
+                <div class="wheel-actions" id="wheelActions"></div>
+                
+                <div class="pity-container">
+                    <div class="pity-text" id="pityText"></div>
+                </div>
+
+                <div class="result-overlay" id="resultOverlay" onclick="closeResultOverlay()">
+                    <div class="result-title">恭喜获得</div>
+                    <div class="result-items" id="resultItemsContainer"></div>
+                    <div class="result-hint">点击任意区域关闭</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== 数据定义 ====================
+    const holidays = [
+        { start: new Date(2026, 4, 1), end: new Date(2026, 4, 10) },
+        { start: new Date(2026, 7, 7), end: new Date(2026, 7, 23) },
+        { start: new Date(2026, 8, 26), end: new Date(2026, 9, 8) },
+        { start: new Date(2027, 0, 1), end: new Date(2027, 0, 8) },
+        { start: new Date(2027, 0, 30), end: new Date(2027, 1, 12) },
+        { start: new Date(2027, 3, 30), end: new Date(2027, 4, 9) },
+        { start: new Date(2027, 7, 6), end: new Date(2027, 7, 22) },
+        { start: new Date(2027, 9, 1), end: new Date(2027, 9, 10) }
+    ];
+
+    const gachaConfig = {
+        topLeft: {
+            name: '120左上', cost: 120, maxPity: 30, grandName: '女王鞭/开山刀/蝴蝶刀',
+            items: [
+                { name: '女王鞭/开山刀/蝴蝶刀', prob: 0.02, integral: 0, isGrand: true, weapons: ['女王鞭', '开山刀', '蝴蝶刀'] },
+                { name: '自行车x1', prob: 0.02, integral: 0 },
+                { name: '自行车零件x1', prob: 0.24, integral: 0 },
+                { name: '治疗喷雾x2', prob: 0.12, integral: 0 },
+                { name: '游园积分x1666', prob: 0.10, integral: 1666 },
+                { name: '游园积分x888', prob: 0.50, integral: 888 }
+            ]
+        },
+        topRight: {
+            name: '120右上', cost: 120, maxPity: 30, grandName: '阿瓦普步枪/影棘/无坚不摧',
+            items: [
+                { name: '阿瓦普步枪/影棘/无坚不摧', prob: 0.02, integral: 0, isGrand: true, weapons: ['阿瓦普步枪', '影棘', '无坚不摧'] },
+                { name: '高级零件箱x1', prob: 0.24, integral: 0 },
+                { name: '恢复药剂x1', prob: 0.07, integral: 0 },
+                { name: '游园积分x2666', prob: 0.07, integral: 2666 },
+                { name: '游园积分x1666', prob: 0.10, integral: 1666 },
+                { name: '游园积分x666', prob: 0.50, integral: 666 }
+            ]
+        },
+        bottomRight: {
+            name: '80右下', cost: 80, maxPity: 20, grandName: '海洋之鹰/尼格尔军刀/尚方宝剑',
+            items: [
+                { name: '海洋之鹰/尼格尔军刀/尚方宝剑', prob: 0.02, integral: 0, isGrand: true, weapons: ['海洋之鹰', '尼格尔军刀', '尚方宝剑'] },
+                { name: '游园积分x1266', prob: 0.04, integral: 1266 },
+                { name: '高级零件箱x1', prob: 0.24, integral: 0 },
+                { name: '狂暴药剂x1', prob: 0.10, integral: 0 },
+                { name: '游园积分x888', prob: 0.10, integral: 888 },
+                { name: '游园积分x666', prob: 0.50, integral: 666 }
+            ]
+        },
+        bottomLeft: {
+            name: '300左下', cost: 300, maxPity: 40, grandName: '游园积分x8888',
+            items: [
+                { name: '游园积分x8888', prob: 0.02, integral: 8888, isGrand: true },
+                { name: '皇帝的新枪/麦克雷电/电馅儿杆', prob: 0.06, integral: 0, weapons: ['皇帝的新枪', '麦克雷电', '电馅儿杆'] },
+                { name: '游园积分x2688', prob: 0.15, integral: 2688 },
+                { name: '恢复药剂x2', prob: 0.19, integral: 0 },
+                { name: '游园积分x3288', prob: 0.08, integral: 3288 },
+                { name: '游园积分x1288', prob: 0.50, integral: 1288 }
+            ]
+        },
+        limited: {
+            name: '限定', cost: 666, maxPity: 40, grandName: '游园积分x10888',
+            items: [
+                { name: '游园积分x10888', prob: 0.03, integral: 10888, isGrand: true },
+                { name: '蛙·好弓', prob: 0.06, integral: 0 },
+                { name: '游园积分x6666', prob: 0.06, integral: 6666 },
+                { name: '恢复药剂x2', prob: 0.10, integral: 0 },
+                { name: '游园积分x5888', prob: 0.25, integral: 5888 },
+                { name: '游园积分x2888', prob: 0.50, integral: 2888 }
+            ]
+        }
+    };
+
+    const exchangeItems = {
+        '机能': [
+            { id: 'poison_weapon_white', name: '白板毒弓', cost: 98888 },
+            { id: 'poison_weapon_pity', name: '毒弓概率配件', cost: 9888 },
+            { id: 'poison_weapon_301', name: '毒弓301', cost: 58888 },
+            { id: 'func_head_white', name: '白板机能头', cost: 28888 },
+            { id: 'func_head_pity', name: '机能头小配件', cost: 9888 },
+            { id: 'func_pants_white', name: '白板机能裤', cost: 48888 },
+            { id: 'func_pants_pity', name: '机能裤小配件', cost: 9888 },
+            { id: 'func_pants_301', name: '机能裤301', cost: 38888 },
+            { id: 'func_armor_white', name: '白板机能甲', cost: 58888 },
+            { id: 'func_armor_pity', name: '机能甲小配件', cost: 9888 },
+            { id: 'func_armor_301', name: '机能甲301', cost: 48888 }
+        ],
+        '龙': [
+            { id: 'dragon_weapon_white', name: '白板龙铳', cost: 98888 },
+            { id: 'dragon_weapon_pity', name: '龙铳概率配件', cost: 9888 },
+            { id: 'dragon_weapon_301', name: '龙铳301', cost: 58888 },
+            { id: 'dragon_head_white', name: '白板龙头', cost: 28888 },
+            { id: 'dragon_head_pity', name: '龙头小配件', cost: 9888 },
+            { id: 'dragon_pants_white', name: '白板龙裤', cost: 48888 },
+            { id: 'dragon_pants_pity', name: '龙裤小配件', cost: 9888 },
+            { id: 'dragon_pants_301', name: '龙裤301', cost: 38888 },
+            { id: 'dragon_armor_white', name: '白板龙甲', cost: 58888 },
+            { id: 'dragon_armor_pity', name: '龙甲小配件', cost: 9888 },
+            { id: 'dragon_armor_301', name: '龙甲301', cost: 58888 }
+        ],
+        '星核': [
+            { id: 'star_weapon_white', name: '白板星核', cost: 98888 },
+            { id: 'star_weapon_pity', name: '星核概率配件', cost: 9888 },
+            { id: 'star_weapon_301', name: '星核301', cost: 58888 },
+            { id: 'star_head_white', name: '白板星核头', cost: 28888 },
+            { id: 'star_head_pity', name: '星核头小配件', cost: 9888 },
+            { id: 'star_pants_white', name: '白板星核裤', cost: 48888 },
+            { id: 'star_pants_pity', name: '星核裤小配件', cost: 9888 },
+            { id: 'star_pants_301', name: '星核裤301', cost: 38888 },
+            { id: 'star_armor_white', name: '白板星核甲', cost: 58888 },
+            { id: 'star_armor_pity', name: '星核甲小配件', cost: 9888 },
+            { id: 'star_armor_301', name: '星核甲301', cost: 58888 }
+        ],
+        '星空': [
+            { id: 'sky_weapon_white', name: '白板星空刀', cost: 128888 },
+            { id: 'sky_weapon_pity', name: '星空刀概率配件', cost: 9888 },
+            { id: 'sky_weapon_301', name: '星空刀301', cost: 68888 },
+            { id: 'sky_head_white', name: '白板星空头', cost: 28888 },
+            { id: 'sky_head_pity', name: '星空头小配件', cost: 9888 },
+            { id: 'sky_pants_white', name: '白板星空裤', cost: 48888 },
+            { id: 'sky_pants_pity', name: '星空裤小配件', cost: 9888 },
+            { id: 'sky_pants_301', name: '星空裤301', cost: 38888 },
+            { id: 'sky_armor_white', name: '白板星空甲', cost: 58888 },
+            { id: 'sky_armor_pity', name: '星空甲小配件', cost: 9888 },
+            { id: 'sky_armor_301', name: '星空甲301', cost: 68888 }
+        ],
+        '雷': [
+            { id: 'thunder_weapon_white', name: '白板雷枪', cost: 98888 },
+            { id: 'thunder_weapon_pity', name: '雷枪概率配件', cost: 9888 },
+            { id: 'thunder_weapon_301', name: '雷枪301', cost: 58888 },
+            { id: 'thunder_head_white', name: '白板雷头', cost: 28888 },
+            { id: 'thunder_head_pity', name: '雷头小配件', cost: 9888 },
+            { id: 'thunder_pants_white', name: '白板雷裤', cost: 48888 },
+            { id: 'thunder_pants_pity', name: '雷裤小配件', cost: 9888 },
+            { id: 'thunder_pants_301', name: '雷裤301', cost: 38888 },
+            { id: 'thunder_armor_white', name: '白板雷甲', cost: 58888 },
+            { id: 'thunder_armor_pity', name: '雷甲小配件', cost: 9888 },
+            { id: 'thunder_armor_301', name: '雷甲301', cost: 58888 }
+        ],
+        '冰': [
+            { id: 'ice_weapon_white', name: '白板冰枪', cost: 128888 },
+            { id: 'ice_weapon_pity', name: '冰枪概率配件', cost: 9888 },
+            { id: 'ice_weapon_301', name: '冰枪301', cost: 58888 },
+            { id: 'ice_head_white', name: '白板冰头', cost: 28888 },
+            { id: 'ice_head_pity', name: '冰头小配件', cost: 9888 },
+            { id: 'ice_pants_white', name: '白板冰裤', cost: 48888 },
+            { id: 'ice_pants_pity', name: '冰裤小配件', cost: 9888 },
+            { id: 'ice_pants_301', name: '冰裤301', cost: 38888 },
+            { id: 'ice_armor_white', name: '白板冰甲', cost: 58888 },
+            { id: 'ice_armor_pity', name: '冰甲小配件', cost: 9888 },
+            { id: 'ice_armor_301', name: '冰甲301', cost: 58888 }
+        ],
+        '年兽': [
+            { id: 'beast_weapon_white', name: '白板战鼓', cost: 98888 },
+            { id: 'beast_weapon_pity', name: '战鼓概率配件', cost: 9888 },
+            { id: 'beast_weapon_301', name: '战鼓301', cost: 58888 },
+            { id: 'beast_head_white', name: '白板年兽头', cost: 38888 },
+            { id: 'beast_head_pity', name: '年兽头小配件', cost: 9888 },
+            { id: 'beast_pants_white', name: '白板年兽裤', cost: 58888 },
+            { id: 'beast_pants_pity', name: '年兽裤小配件', cost: 9888 },
+            { id: 'beast_pants_301', name: '年兽裤301', cost: 38888 },
+            { id: 'beast_armor_white', name: '白板年兽甲', cost: 68888 },
+            { id: 'beast_armor_pity', name: '年兽甲小配件', cost: 9888 }
+        ]
+    };
+
+    // ==================== 全局变量 ====================
+    let totalCoins = 0;
+    let remainCoins = 0;
+    let gachaSpent = 0;
+    let gachaIntegralAcc = 0;
+    let gachaItemsAcc = {};
+    let balloonSpent = 0;
+    let balloonIntegralAcc = 0;
+    let balloonTotalTimes = 0;
+    let baseIntegral = 0;
+    let currentWheelId = 'topLeft';
+    let pityCounters = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+
+    // 希望兑换相关
+    let currentExchangeSuite = '机能';
+    let selectedExchangeItems = new Set();
+
+    // 实际填写相关
+    let currentActualSuite = 'topLeft';
+    let actualCounts = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+
+    // ==================== 工具函数 ====================
+    function overlapDays(rs, re, hs, he) {
+        const s = new Date(Math.max(rs.getTime(), hs.getTime()));
+        const e = new Date(Math.min(re.getTime(), he.getTime()));
+        if (s > e) return 0;
+        return Math.floor((e - s) / (1000*60*60*24)) + 1;
+    }
+
+    function formatTime(seconds) {
+        if (seconds < 60) return seconds + '秒';
+        if (seconds < 3600) return Math.floor(seconds/60) + '分' + (seconds%60) + '秒';
+        return Math.floor(seconds/3600) + '小时' + Math.floor((seconds%3600)/60) + '分';
+    }
+
+    function updateSummary() {
+        document.getElementById('gachaCost').textContent = gachaSpent.toLocaleString();
+        document.getElementById('gachaIntegral').textContent = gachaIntegralAcc.toLocaleString();
+        const itemsText = Object.keys(gachaItemsAcc).length === 0 ? '无' :
+            Object.entries(gachaItemsAcc).map(([name, count]) => `${name}x${count}`).join('、');
+        document.getElementById('gachaItems').textContent = itemsText;
+        document.getElementById('balloonCost').textContent = balloonSpent.toLocaleString();
+        document.getElementById('balloonIntegral').textContent = balloonIntegralAcc.toLocaleString();
+        const totalSeconds = balloonTotalTimes * 10;
+        document.getElementById('balloonTotalTime').textContent = formatTime(totalSeconds);
+
+        const finalIntegral = baseIntegral + gachaIntegralAcc + balloonIntegralAcc;
+        document.getElementById('finalIntegral').textContent = finalIntegral.toLocaleString();
+        document.getElementById('remainCoins').textContent = remainCoins.toLocaleString();
+        updateDesired();
+        calcActual();
+    }
+
+    // ==================== 转盘逻辑 ====================
+    function drawOnce(wheelId) {
+        const config = gachaConfig[wheelId];
+        const items = config.items;
+        
+        const grandIndex = items.findIndex(i => i.isGrand || (wheelId === 'bottomLeft' && i.name === '游园积分x8888') || (wheelId === 'limited' && i.name === '游园积分x10888'));
+        
+        let hitIndex = -1;
+        if (pityCounters[wheelId] >= config.maxPity - 1) {
+            hitIndex = grandIndex;
+        } else {
+            const rand = Math.random();
+            let cumulative = 0;
+            for (let i = 0; i < items.length; i++) {
+                cumulative += items[i].prob;
+                if (rand < cumulative) {
+                    hitIndex = i;
+                    break;
+                }
+            }
+            if (hitIndex === -1) hitIndex = items.length - 1;
+        }
+        
+        if (hitIndex === grandIndex) {
+            pityCounters[wheelId] = 0;
+        } else {
+            pityCounters[wheelId]++;
+        }
+        
+        const item = items[hitIndex];
+        let resultName = item.name;
+        if (item.weapons) {
+            resultName = item.weapons[Math.floor(Math.random() * item.weapons.length)];
+        }
+        
+        return { integral: item.integral || 0, name: resultName };
+    }
+
+    // ==================== 弹窗与UI渲染 ====================
+    function openGachaModal() {
+        document.getElementById('gachaModal').classList.add('active');
+        document.getElementById('gachaMenuView').style.display = 'block';
+        document.getElementById('wheelPlayView').style.display = 'none';
+    }
+
+    function closeGachaModal() {
+        document.getElementById('gachaModal').classList.remove('active');
+    }
+
+    function openWheel(wheelId) {
+        currentWheelId = wheelId;
+        const config = gachaConfig[wheelId];
+        
+        document.getElementById('gachaMenuView').style.display = 'none';
+        document.getElementById('wheelPlayView').style.display = 'flex';
+        document.getElementById('wheelTitle').textContent = config.name.replace('左上', '左上转盘').replace('右上', '右上转盘').replace('右下', '右下转盘').replace('左下', '左下转盘');
+
+        const lightsContainer = document.getElementById('wheelLights');
+        lightsContainer.innerHTML = '';
+        for (let i = 0; i < 12; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'light-dot';
+            if (i % 4 === 0) dot.classList.add('dot-red');
+            else if (i % 4 === 1) dot.classList.add('dot-yellow');
+            else if (i % 4 === 2) dot.classList.add('dot-cyan');
+            else dot.classList.add('dot-white');
+            dot.style.transform = `rotate(${i * 30}deg) translateY(-160px)`;
+            lightsContainer.appendChild(dot);
+        }
+
+        const innerWheel = document.getElementById('wheelInner');
+        innerWheel.style.background = `conic-gradient(
+            #facc15 0deg 60deg,
+            #4b5563 60deg 120deg,
+            #4b5563 120deg 180deg,
+            #4b5563 180deg 240deg,
+            #4b5563 240deg 300deg,
+            #4b5563 300deg 360deg
+        )`;
+
+        let innerHtml = '';
+        config.items.forEach((item, i) => {
+            const angle = i * 60 + 30;
+            let text = item.name;
+            let colorClass = (i === 0) ? 'text-black' : 'text-white';
+            let marginTop = '40px';
+            if (text.includes('x1') || text.includes('x2') || text.includes('x888') || text.includes('x666') || text.includes('x2666') || text.includes('x1266') || text.includes('x8888') || text.includes('x2688') || text.includes('x3288') || text.includes('x10888') || text.includes('x6666') || text.includes('x5888') || text.includes('x2888')) {
+                marginTop = '45px';
+            }
+            
+            innerHtml += `
+                <div class="sector-item" style="transform: rotate(${angle}deg);">
+                    <div class="sector-content" style="transform: rotate(-${angle}deg); margin-top: ${marginTop};">
+                        <div class="${colorClass}">${text.replace('x', '<br>x')}</div>
+                    </div>
+                </div>
+            `;
+        });
+        innerWheel.innerHTML = innerHtml;
+
+        const actionsContainer = document.getElementById('wheelActions');
+        actionsContainer.innerHTML = `
+            <button class="action-btn btn-purple" id="btnSpin10" onclick="spinWheel('${wheelId}', 10)">
+                <span class="btn-cost">消耗游园币x${config.cost * 10}</span>
+                <span class="btn-title">转10次</span>
+            </button>
+            <button class="action-btn btn-gold" id="btnSpin1" onclick="spinWheel('${wheelId}', 1)">
+                <span class="btn-cost">消耗游园币x${config.cost}</span>
+                <span class="btn-title">转1次</span>
+            </button>
+        `;
+
+        updatePityDisplay();
+        updateWheelButtons();
+    }
+
+    function updatePityFromRemain() {
+        if (!currentWheelId) return;
+        const config = gachaConfig[currentWheelId];
+        let input = document.getElementById('remainInput');
+        let remain = parseInt(input.value) || 1;
+        
+        if (remain < 1) { remain = 1; input.value = 1; }
+        if (remain > config.maxPity) { remain = config.maxPity; input.value = config.maxPity; }
+        
+        pityCounters[currentWheelId] = config.maxPity - remain;
+    }
+
+    function updatePityDisplay() {
+        if (!currentWheelId) return;
+        const config = gachaConfig[currentWheelId];
+        let remain = config.maxPity - pityCounters[currentWheelId];
+        if (remain <= 0) remain = config.maxPity;
+        
+        const pityText = document.getElementById('pityText');
+        pityText.innerHTML = `还剩 <input type="number" class="inline-pity-input" id="remainInput" value="${remain}" min="1" max="${config.maxPity}" onchange="updatePityFromRemain()" oninput="updatePityFromRemain()"> 次必中 ${config.grandName}`;
+    }
+
+    function updateWheelButtons() {
+        if (!currentWheelId) return;
+        const config = gachaConfig[currentWheelId];
+        
+        const btn1 = document.getElementById('btnSpin1');
+        const btn10 = document.getElementById('btnSpin10');
+        if (btn1) {
+            if (remainCoins >= config.cost) btn1.style.opacity = '1';
+            else btn1.style.opacity = '0.5';
+        }
+        if (btn10) {
+            if (remainCoins >= config.cost * 10) btn10.style.opacity = '1';
+            else btn10.style.opacity = '0.5';
+        }
+    }
+
+    function spinWheel(wheelId, times) {
+        const config = gachaConfig[wheelId];
+        const cost = times * config.cost;
+        
+        if (cost > remainCoins) {
+            alert(`游园币不足！需要${cost}，剩余${remainCoins}`);
+            return;
+        }
+
+        remainCoins -= cost;
+        gachaSpent += cost;
+
+        let results = [];
+        for(let i=0; i<times; i++){
+            let res = drawOnce(wheelId);
+            gachaIntegralAcc += res.integral;
+            if (res.integral === 0) {
+                gachaItemsAcc[res.name] = (gachaItemsAcc[res.name] || 0) + 1;
+            }
+            results.push(res);
+        }
+        
+        updateSummary();
+        updatePityDisplay();
+        updateWheelButtons();
+        showResultOverlay(results);
+    }
+
+    function showResultOverlay(results) {
+        const container = document.getElementById('resultItemsContainer');
+        container.innerHTML = '';
+        
+        const countMap = {};
+        results.forEach(r => {
+            countMap[r.name] = (countMap[r.name] || 0) + 1;
+        });
+
+        for (const [name, count] of Object.entries(countMap)) {
+            const itemBox = document.createElement('div');
+            itemBox.className = 'result-item-box';
+            itemBox.innerHTML = `
+                <div class="name">${name}</div>
+                ${count > 1 ? `<div class="name" style="margin-top:4px; font-size:12px; opacity:0.8;">x${count}</div>` : ''}
+            `;
+            container.appendChild(itemBox);
+        }
+
+        document.getElementById('resultOverlay').style.display = 'flex';
+    }
+
+    function closeResultOverlay() {
+        document.getElementById('resultOverlay').style.display = 'none';
+    }
+
+    // ==================== 打气球 ====================
+    function updateBalloonTime() {
+        const times = parseInt(document.getElementById('balloonTimes').value) || 0;
+        const seconds = times * 10;
+        document.getElementById('balloonTime').textContent = formatTime(seconds);
+    }
+
+    function confirmBalloon() {
+        const times = parseInt(document.getElementById('balloonTimes').value) || 0;
+        if (times <= 0) return;
+        const cost = times * 30;
+        if (cost > remainCoins) {
+            alert(`游园币不足！需要${cost}，剩余${remainCoins}`);
+            return;
+        }
+        remainCoins -= cost;
+        balloonSpent += cost;
+        balloonIntegralAcc += times * 196;
+        balloonTotalTimes += times;
+        document.getElementById('balloonTimes').value = 0;
+        updateBalloonTime();
+        updateSummary();
+    }
+
+    function balloonAllIn() {
+        if (remainCoins <= 0) {
+            alert('没有游园币可用于打气球');
+            return;
+        }
+        const maxTimes = Math.floor(remainCoins / 30);
+        if (maxTimes <= 0) {
+            alert('游园币不足以打一次气球');
+            return;
+        }
+        document.getElementById('balloonTimes').value = maxTimes;
+        updateBalloonTime();
+    }
+
+    // ==================== 实际结果对比 (弹窗) ====================
+    function openActualModal() {
+        document.getElementById('actualModal').classList.add('active');
+        renderActualGachaButtons();
+        renderActualGachaCount();
+        renderActualItems();
+    }
+
+    function closeActualModal() {
+        document.getElementById('actualModal').classList.remove('active');
+        calcActual();
+    }
+
+    function renderActualGachaButtons() {
+        const container = document.getElementById('actualGachaButtons');
+        container.innerHTML = '';
+        for (const id in gachaConfig) {
+            const btn = document.createElement('button');
+            btn.className = 'exchange-btn';
+            if (id === currentActualSuite) btn.classList.add('active');
+            btn.textContent = gachaConfig[id].name;
+            btn.onclick = () => {
+                currentActualSuite = id;
+                renderActualGachaButtons();
+                renderActualGachaCount();
+            };
+            container.appendChild(btn);
+        }
+    }
+
+    function renderActualGachaCount() {
+        const container = document.getElementById('actualGachaCountContainer');
+        container.innerHTML = '';
+        
+        const id = currentActualSuite;
+        const config = gachaConfig[id];
+        
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.innerHTML = `
+            <label>抽奖次数（单价 ${config.cost} 游园币）</label>
+            <input type="number" id="actualCount_${id}" value="${actualCounts[id]}" min="0" oninput="updateActualCount('${id}', this.value)">
+        `;
+        container.appendChild(div);
+    }
+
+    function updateActualCount(id, val) {
+        actualCounts[id] = parseInt(val) || 0;
+        calcActual();
+    }
+
+    function renderActualItems() {
+        const integralContainer = document.getElementById('actualItemsContainer');
+        const propsContainer = document.getElementById('actualPropsInputContainer');
+        integralContainer.innerHTML = '';
+        propsContainer.innerHTML = '';
+
+        const integralSet = new Set();
+        const propSet = new Set();
+
+        for (const id in gachaConfig) {
+            gachaConfig[id].items.forEach(item => {
+                if (item.integral > 0) {
+                    integralSet.add(item.integral);
+                } else {
+                    if (item.weapons) {
+                        item.weapons.forEach(w => propSet.add(w));
+                    } else {
+                        propSet.add(item.name);
+                    }
+                }
+            });
+        }
+
+        Array.from(integralSet).sort((a,b)=>a-b).forEach(val => {
+            const div = document.createElement('div');
+            div.className = 'row';
+            div.innerHTML = `
+                <div class="form-group">
+                    <label>积分x${val}</label>
+                    <input type="number" id="actual_int_${val}" value="0" min="0" data-integral="${val}" oninput="calcActual()">
+                </div>
+            `;
+            integralContainer.appendChild(div);
+        });
+
+        Array.from(propSet).forEach((name, idx) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:0.85rem; margin-bottom:4px; color:#cbd5e1;';
+            row.innerHTML = `
+                <span style="flex:2;">${name}</span>
+                <input type="number" id="prop_${idx}" value="0" min="0" style="width:70px; padding:4px; text-align:center; background:#334155; border:1px solid #475569; color:white; border-radius:6px;" data-prop-name="${name}" oninput="calcActual()">
+            `;
+            propsContainer.appendChild(row);
+        });
+    }
+
+    function toggleActualInput() {
+        const useSim = document.getElementById('useSimResult').checked;
+        document.getElementById('actualInputArea').style.display = useSim ? 'none' : 'block';
+        
+        if (useSim) {
+            // 如果用模拟结果，将实际次数按模拟的比例分配（仅作展示，实际计算由 useSim 控制）
+            // 清除手动填写的项
+            actualCounts = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+            document.querySelectorAll('#actualItemsContainer input').forEach(i => i.value = 0);
+            document.querySelectorAll('#actualPropsInputContainer input[type="number"]').forEach(i => i.value = 0);
+            document.getElementById('actualBalloonTimes').value = 0;
+        }
+        calcActual();
+    }
+
+    function calcActual() {
+        const useSim = document.getElementById('useSimResult').checked;
+
+        let actualGachaCost = 0;
+        let actualGachaIntegral = 0;
+        let actualPropsList = [];
+        let actualBalloonTimes = 0;
+
+        if (useSim) {
+            actualGachaCost = gachaSpent;
+            actualGachaIntegral = gachaIntegralAcc;
+            actualBalloonTimes = balloonTotalTimes;
+            
+            for (const [name, count] of Object.entries(gachaItemsAcc)) {
+                if (count > 0) actualPropsList.push(`${name}x${count}`);
+            }
+        } else {
+            // 计算转盘实际花费
+            for (const id in gachaConfig) {
+                actualGachaCost += (actualCounts[id] || 0) * gachaConfig[id].cost;
+            }
+            
+            // 计算积分
+            document.querySelectorAll('#actualItemsContainer input[type="number"]').forEach(input => {
+                const count = parseInt(input.value) || 0;
+                const integral = parseInt(input.dataset.integral) || 0;
+                actualGachaIntegral += count * integral;
+            });
+
+            // 计算道具
+            document.querySelectorAll('#actualPropsInputContainer input[type="number"]').forEach(input => {
+                const count = parseInt(input.value) || 0;
+                if (count > 0) actualPropsList.push(`${input.dataset.propName}x${count}`);
+            });
+
+            // 打气球次数
+            actualBalloonTimes = parseInt(document.getElementById('actualBalloonTimes').value) || 0;
+        }
+        
+        const actualBalloonIntegral = actualBalloonTimes * 196;
+        const actualTotalIntegral = baseIntegral + actualGachaIntegral + actualBalloonIntegral;
+
+        // 1. 填写的积分
+        document.getElementById('actualTotalIntegral').textContent = actualTotalIntegral.toLocaleString();
+
+        // 2. 填写的道具
+        document.getElementById('actualPropsText').textContent = actualPropsList.length > 0 ? actualPropsList.join('、') : '无';
+
+        // 3. 全打气球积分
+        const actualTotalCost = actualGachaCost + actualBalloonTimes * 30;
+        const pureBalloonGain = Math.floor(actualTotalCost / 30) * 196;
+        const pureBalloonTotal = baseIntegral + pureBalloonGain;
+        document.getElementById('pureBalloonTotalIntegral').textContent = pureBalloonTotal.toLocaleString();
+
+        // 4. 积分差值
+        const diffPure = actualTotalIntegral - pureBalloonTotal;
+        const dp = document.getElementById('diffActualVsPure');
+        dp.textContent = (diffPure >= 0 ? '+' : '') + diffPure.toLocaleString();
+        dp.className = 'result-value highlight ' + (diffPure >= 0 ? 'profit-positive' : 'profit-negative');
+    }
+
+    // ==================== 希望兑换 (弹窗) ====================
+    function openExchangeModal() {
+        document.getElementById('exchangeModal').classList.add('active');
+        renderExchangeButtons();
+        renderExchangeItems();
+    }
+
+    function closeExchangeModal() {
+        document.getElementById('exchangeModal').classList.remove('active');
+        updateDesired();
+    }
+
+    function renderExchangeButtons() {
+        const container = document.getElementById('exchangeButtons');
+        container.innerHTML = '';
+        for (const suite in exchangeItems) {
+            const btn = document.createElement('button');
+            btn.className = 'exchange-btn';
+            if (suite === currentExchangeSuite) btn.classList.add('active');
+            btn.textContent = suite;
+            btn.onclick = () => {
+                currentExchangeSuite = suite;
+                renderExchangeButtons();
+                renderExchangeItems();
+            };
+            container.appendChild(btn);
+        }
+    }
+
+    function renderExchangeItems() {
+        const container = document.getElementById('exchangeItemsContainer');
+        container.innerHTML = '';
+        
+        const items = exchangeItems[currentExchangeSuite];
+        const suiteDiv = document.createElement('div');
+        suiteDiv.style.marginBottom = '12px';
+        
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'exchange-item';
+            const checkboxId = `ex_${item.id}`;
+            const isChecked = selectedExchangeItems.has(item.id) ? 'checked' : '';
+            
+            div.innerHTML = `
+                <input type="checkbox" id="${checkboxId}" value="${item.cost}" ${isChecked} onchange="toggleExchangeItem('${item.id}', this.checked)">
+                <label for="${checkboxId}">${item.name}（${item.cost}积分）</label>
+            `;
+            suiteDiv.appendChild(div);
+        });
+        container.appendChild(suiteDiv);
+    }
+
+    function toggleExchangeItem(id, isChecked) {
+        if (isChecked) {
+            selectedExchangeItems.add(id);
+        } else {
+            selectedExchangeItems.delete(id);
+        }
+        updateDesired();
+    }
+
+    function updateDesired() {
+        let totalCost = 0;
+        let selectedNames = [];
+        
+        const nameMap = {};
+        const costMap = {};
+        for (const suite in exchangeItems) {
+            exchangeItems[suite].forEach(item => {
+                nameMap[item.id] = item.name;
+                costMap[item.id] = item.cost;
+            });
+        }
+
+        selectedExchangeItems.forEach(id => {
+            totalCost += costMap[id] || 0;
+            selectedNames.push(nameMap[id]);
+        });
+        
+        document.getElementById('desiredCost').textContent = totalCost.toLocaleString();
+        
+        const summaryEl = document.getElementById('selectedItemsSummary');
+        if (selectedNames.length > 0) {
+            summaryEl.textContent = selectedNames.join('、');
+        } else {
+            summaryEl.textContent = '无';
+        }
+
+        const currentIntegral = parseInt(document.getElementById('finalIntegral').textContent.replace(/,/g, '')) || 0;
+        document.getElementById('currentIntegralForDesired').textContent = currentIntegral.toLocaleString();
+        const diff = currentIntegral - totalCost;
+        const diffEl = document.getElementById('differenceDesired');
+        diffEl.textContent = (diff >= 0 ? '足够，剩余 ' + diff.toLocaleString() : '还差 ' + Math.abs(diff).toLocaleString());
+        diffEl.className = 'result-value highlight ' + (diff >= 0 ? 'profit-positive' : 'profit-negative');
+    }
+
+    // ==================== 基础计算与重置 ====================
+    function calculateBase() {
+        let startDate = new Date(document.getElementById('startDate').value + 'T00:00:00');
+        let endDate = new Date(document.getElementById('endDate').value + 'T00:00:00');
+        const alreadyClaimed = document.getElementById('alreadyClaimed').checked;
+        if (alreadyClaimed) {
+            startDate.setDate(startDate.getDate() + 1);
+        }
+
+        const a = parseInt(document.getElementById('a').value) || 0;
+        const b = parseInt(document.getElementById('b').value) || 0;
+        const D = parseInt(document.getElementById('D').value) || 0;
+        const E = parseInt(document.getElementById('E').value) || 0;
+        const G = parseInt(document.getElementById('G').value) || 0;
+        const H = parseInt(document.getElementById('H').value) || 0;
+        const extraCoins = parseInt(document.getElementById('extraCoins').value) || 0;
+
+        if (isNaN(startDate) || isNaN(endDate)) { alert('请输入有效日期'); return; }
+        if (startDate > endDate) { alert('起始日期不能晚于结束日期'); return; }
+
+        const C = Math.floor((endDate - startDate) / (1000*60*60*24)) + 1;
+        document.getElementById('resTotalDays').textContent = C;
+
+        if (a<0||b<0||D<0||E<0||G<0||H<0||extraCoins<0) { alert('数值不能为负'); return; }
+        if (D>C) { alert('月卡天数不能大于总天数'); return; }
+        if (E>C) { alert('假日卡天数不能大于总天数'); return; }
+        if (H>C) { alert('战令氪金档位天数不能大于总天数'); return; }
+
+        let F = 0;
+        holidays.forEach(h => { F += overlapDays(startDate, endDate, h.start, h.end); });
+
+        const c = (C + F + G + D) * 180 + 1000 * E + 360 * H;
+        totalCoins = b + c + extraCoins;
+        remainCoins = totalCoins;
+        baseIntegral = a;
+
+        gachaSpent = 0;
+        gachaIntegralAcc = 0;
+        gachaItemsAcc = {};
+        balloonSpent = 0;
+        balloonIntegralAcc = 0;
+        balloonTotalTimes = 0;
+        pityCounters = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+
+        document.getElementById('balloonTimes').value = 0;
+        updateBalloonTime();
+
+        document.getElementById('useSimResult').checked = false;
+        document.getElementById('actualInputArea').style.display = 'block';
+        actualCounts = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+        document.getElementById('actualBalloonTimes').value = 0;
+        document.querySelectorAll('#actualItemsContainer input').forEach(input => input.value = 0);
+        document.querySelectorAll('#actualPropsInputContainer input').forEach(input => input.value = 0);
+        calcActual();
+
+        document.getElementById('resCoin').textContent = c.toLocaleString();
+        document.getElementById('resultPanel').style.display = 'block';
+        updateSummary();
+    }
+
+    function resetAll() {
+        initDates();
+        document.getElementById('a').value = 0;
+        document.getElementById('b').value = 0;
+        document.getElementById('D').value = 0;
+        document.getElementById('E').value = 0;
+        document.getElementById('G').value = 0;
+        document.getElementById('H').value = 0;
+        document.getElementById('extraCoins').value = 0;
+        document.getElementById('alreadyClaimed').checked = false;
+        document.getElementById('resTotalDays').textContent = '-';
+        document.getElementById('resultPanel').style.display = 'none';
+        document.getElementById('balloonTimes').value = 0;
+        updateBalloonTime();
+        totalCoins = 0;
+        remainCoins = 0;
+        gachaSpent = 0;
+        gachaIntegralAcc = 0;
+        gachaItemsAcc = {};
+        balloonSpent = 0;
+        balloonIntegralAcc = 0;
+        balloonTotalTimes = 0;
+        baseIntegral = 0;
+        pityCounters = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+        document.getElementById('useSimResult').checked = false;
+        document.getElementById('actualInputArea').style.display = 'block';
+        actualCounts = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
+        document.getElementById('actualBalloonTimes').value = 0;
+        document.querySelectorAll('#actualItemsContainer input').forEach(input => input.value = 0);
+        document.querySelectorAll('#actualPropsInputContainer input').forEach(input => input.value = 0);
+        calcActual();
+        
+        currentExchangeSuite = '机能';
+        selectedExchangeItems.clear();
+        document.getElementById('exchangeItemsContainer').innerHTML = '';
+        updateDesired();
+    }
+
+    function initDates() {
+        const minDate = new Date(2026, 4, 1);
+        const maxDate = new Date(2027, 11, 31);
+        const today = new Date();
+        let start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        if (start < minDate) start = minDate;
+        if (start > maxDate) start = minDate;
+
+        let end = new Date(start);
+        end.setDate(end.getDate() + 9);
+        if (end > maxDate) end = new Date(maxDate);
+
+        const format = d => d.toISOString().split('T')[0];
+        document.getElementById('startDate').value = format(start);
+        document.getElementById('endDate').value = format(end);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initDates();
+        renderActualGachaButtons();
+        renderActualGachaCount();
+        renderActualItems();
+        renderExchangeButtons();
+        document.getElementById('resultPanel').style.display = 'none';
+        updateBalloonTime();
+        
+        document.getElementById('balloonTimes').addEventListener('input', updateBalloonTime);
+    });
+</script>
+</body>
+</html>
