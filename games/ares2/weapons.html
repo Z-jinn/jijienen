@@ -3,73 +3,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>武器图鉴</title>
+<title>武器图鉴 · Jinn Box</title>
 <style>
-/* ===== 字号变量（统管，避免各处写死） ===== */
+/* ===== 字号与主题变量 ===== */
 :root {
   --fs-stat: 13px;
   --fs-body: 14px;
   --fs-title: 18px;
+  --accent: #8ea8ff;
+  --accent-2: #6a8dff;
+  --text: #e8ecf7;
+  --text-dim: #8b95ad;
+  --text-mute: #64748b;
+  --line: rgba(255,255,255,.1);
+  --line-soft: rgba(255,255,255,.06);
 }
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
 
 body {
   margin: 0;
-  padding: 115px 20px 20px !important; /* 给固定导航栏留空间 */
-  background: #1a1b23;
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-  color: #333;
+  padding: 132px 16px 48px !important;
+  background: radial-gradient(1200px 800px at 50% -10%, #1c2440, #0a0d15 60%) !important;
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100vh;
 }
+
 .main-wrapper { width: 100%; max-width: 750px; }
+
+/* ===== 搜索框 ===== */
 .search-wrapper { margin-bottom: 20px; }
-.search-wrapper input { width: 100%; padding: 14px 20px; border-radius: 8px; border: 1px solid #2f4052; background: #2a2b36; color: #fff; font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.3); outline: none; transition: 0.2s; }
-.search-wrapper input::placeholder { color: #6a6b7c; }
-.search-wrapper input:focus { border-color: #6a5b8e; box-shadow: 0 0 10px rgba(106, 91, 142, 0.5); }
-.weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-.grid-item { background: #2a2b36; border: 1px solid #3b3c4a; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); min-width: 0; }
-.grid-item:hover { transform: translateY(-3px); border-color: #6a5b8e; box-shadow: 0 8px 20px rgba(106, 91, 142, 0.4); background: #32333f; }
-.grid-img-box { width: 80px; height: 80px; background: #1a1b23; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-.grid-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.grid-img-box .placeholder { font-size: 12px; color: #6a6b7c; }
-.grid-name { color: #fff; font-size: 14px; font-weight: bold; text-align: center; word-break: break-all; line-height: 1.3; }
-.no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #8aa0b5; font-size: 16px; background: #2a2b36; border-radius: 12px; }
-.weapon-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
-.weapon-modal.show { display: flex; }
-.weapon-card {
-  background: #eaebf0;
+.search-wrapper input {
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  font-size: 15px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 15px rgba(0,0,0,.25);
+  outline: none;
+  transition: .2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search-wrapper input::placeholder { color: #6b7288; }
+.search-wrapper input:focus {
+  border-color: var(--accent-2);
+  background: rgba(255,255,255,.1);
+  box-shadow: 0 0 0 3px rgba(106,141,255,.15);
+}
+
+/* ===== 武器网格 ===== */
+.weapon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+}
+.grid-item {
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform .18s, background .18s, border-color .18s, box-shadow .18s;
+  min-width: 0;
+}
+.grid-item:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,.09);
+  border-color: rgba(120,160,255,.45);
+  box-shadow: 0 18px 40px rgba(80,110,255,.22);
+}
+.grid-item:active { transform: translateY(-1px) scale(.98); }
+
+.grid-img-box {
+  width: 80px;
+  height: 80px;
+  background: rgba(0,0,0,.28);
   border-radius: 12px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.grid-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.grid-img-box .placeholder { font-size: 12px; color: var(--text-mute); }
+
+.grid-name {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.3;
+  letter-spacing: .5px;
+}
+
+.no-result {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dim);
+  font-size: 15px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+}
+
+/* ===== 详情弹窗 ===== */
+.weapon-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.weapon-modal.show { display: flex; }
+
+.weapon-card {
+  background: #141824;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  box-shadow: 0 25px 60px rgba(0,0,0,.7);
   width: 100%;
   max-width: min(750px, 96vw);
   max-height: min(92vh, 92dvh);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  border: 1px solid #b0b1c0;
   position: relative;
   transition: transform .2s ease, opacity .2s ease;
 }
 .weapon-card::-webkit-scrollbar { width: 6px; }
-.weapon-card::-webkit-scrollbar-thumb { background: #6a5b8e; border-radius: 3px; }
+.weapon-card::-webkit-scrollbar-track { background: transparent; }
+.weapon-card::-webkit-scrollbar-thumb {
+  background: rgba(142,168,255,.4);
+  border-radius: 3px;
+}
 
-/* 头部：X 固定右上，永远可见 */
+/* 头部：吸顶，X 固定右上 */
 .weapon-header {
-  background: #6a5b8e;
+  background: linear-gradient(135deg, #2a3555, #1b2340);
   color: #fff;
   text-align: center;
   padding: 12px 58px 12px 16px;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: 1px;
   position: sticky;
   top: 0;
   z-index: 30;
-  min-height: 50px;
+  min-height: 52px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-bottom: 1px solid var(--line);
 }
 .weapon-header .close-btn {
   position: absolute;
@@ -86,64 +192,120 @@ body {
   line-height: 1;
   cursor: pointer;
   color: #fff !important;
-  background: rgba(255,255,255,.18);
-  border: 1px solid rgba(255,255,255,.35);
-  transition: 0.2s;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
+  transition: .2s;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
-.weapon-header .close-btn:hover { background: rgba(255,255,255,.32); color: #fff; }
+.weapon-header .close-btn:hover { background: rgba(255,255,255,.26); }
 .weapon-header .close-btn:active { transform: translateY(-50%) scale(.92); }
 
-.weapon-top { display: grid; grid-template-columns: 130px 1fr; gap: 15px; padding: 15px; background: #f4f5f9; border-bottom: 1px solid #d0d1db; }
-.weapon-img-box { width: 130px; height: 130px; background: #fff; border: 1px solid #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+/* 图片 + 属性 */
+.weapon-top {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 15px;
+  padding: 18px;
+  background: rgba(255,255,255,.03);
+  border-bottom: 1px solid var(--line-soft);
+}
+.weapon-img-box {
+  width: 130px;
+  height: 130px;
+  background: rgba(0,0,0,.3);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 .weapon-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.weapon-img-box .placeholder { font-size: 14px; color: #aaa; }
-.weapon-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 15px; font-size: var(--fs-stat); }
-.stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #d0d1db; padding: 3px 0; }
-.stat-row .label { color: #666; }
-.stat-row .value { color: #111; font-weight: bold; text-align: right; }
-.stat-row .empty { color: #999; font-style: italic; font-weight: normal; }
-.weapon-tags-section { padding: 12px 15px; background: #eaebf0; border-bottom: 1px solid #d0d1db; font-size: var(--fs-body); line-height: 1.8; }
-.weapon-source-section { padding: 12px 15px; background: #eaebf0; border-bottom: 1px solid #d0d1db; font-size: var(--fs-body); line-height: 1.8; }
-.weapon-mods-section { padding: 12px 15px; background: #eaebf0; font-size: var(--fs-body); line-height: 1.8; }
-.section-title { color: #6a5b8e; font-weight: bold; margin-bottom: 6px; font-size: 15px; }
+.weapon-img-box .placeholder { font-size: 14px; color: var(--text-mute); }
+
+.weapon-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 15px;
+  font-size: var(--fs-stat);
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255,255,255,.08);
+  padding: 4px 0;
+}
+.stat-row .label { color: #94a3b8; }
+.stat-row .value { color: #fff; font-weight: 700; text-align: right; }
+.stat-row .empty { color: #5b6478; font-style: italic; font-weight: normal; }
+
+/* 各内容区块 */
+.weapon-tags-section,
+.weapon-source-section,
+.weapon-mods-section {
+  padding: 14px 18px;
+  background: transparent;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: var(--fs-body);
+  line-height: 1.8;
+}
+.weapon-mods-section { border-bottom: none; }
+
+.section-title {
+  color: var(--accent);
+  font-weight: 800;
+  margin-bottom: 8px;
+  font-size: 15px;
+  letter-spacing: .5px;
+}
+
 .tag-row { margin-bottom: 4px; }
-.tag-title { color: #e64b4b; font-weight: bold; margin-right: 5px; }
-.tag-title.blue { color: #3b7bc3; }
-.tag-desc { color: #444; }
+.tag-title { color: #ff7b7b; font-weight: 700; margin-right: 5px; }
+.tag-title.blue { color: #6a9fff; }
+.tag-desc { color: #cbd5e1; }
+
+.source-text { color: #cbd5e1; }
+
 .mod-slot { display: flex; margin-bottom: 10px; }
 .mod-slot:last-child { margin-bottom: 0; }
-.mod-slot-label { color: #6a5b8e; font-weight: bold; min-width: 58px; flex-shrink: 0; }
+.mod-slot-label { color: var(--accent); font-weight: 700; min-width: 58px; flex-shrink: 0; }
 .mod-slot-content { flex: 1; min-width: 0; }
-.mod-item { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #d0d1db; }
-.mod-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-.mod-name { color: #3b7bc3; font-weight: bold; }
-.mod-source { color: #999; font-size: 12px; font-weight: normal; margin-left: 4px; }
-.mod-effect { color: #333; padding-left: 5px; display: block; }
-.mod-empty { color: #999; font-style: italic; }
 
-/* ===== 平板（iPad 竖屏 768 / 横屏 1024） ===== */
+.mod-item {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgba(255,255,255,.08);
+}
+.mod-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+.mod-name { color: #6a9fff; font-weight: 700; }
+.mod-source { color: var(--text-mute); font-size: 12px; font-weight: normal; margin-left: 4px; }
+.mod-effect { color: #cbd5e1; padding-left: 5px; display: block; }
+.mod-empty { color: #5b6478; font-style: italic; }
+
+/* ===== 平板 ===== */
 @media (min-width: 601px) and (max-width: 1100px) {
   :root { --fs-stat: 15px; --fs-body: 15px; --fs-title: 20px; }
-  body { padding: 118px 24px 24px !important; }
+  body { padding: 132px 24px 32px !important; }
   .weapon-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 14px; }
   .weapon-card { max-width: min(760px, 94vw); max-height: 92dvh; }
   .weapon-top { grid-template-columns: 150px 1fr; }
   .weapon-img-box { width: 150px; height: 150px; }
 }
 
-/* ===== 手机：列表 3 列（481–600px） ===== */
+/* ===== 手机 ===== */
 @media (max-width: 600px) {
   :root { --fs-stat: 15px; --fs-body: 15px; --fs-title: 18px; }
-  body { padding: 108px 12px 20px !important; }
+  body { padding: 128px 12px 24px !important; }
+
+  .search-wrapper input { font-size: 16px; }
 
   .weapon-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .grid-item { padding: 10px 8px; border-radius: 10px; }
+  .grid-item { padding: 10px 8px; border-radius: 14px; }
   .grid-img-box { width: 64px; height: 64px; margin-bottom: 8px; }
   .grid-name { font-size: 13px; line-height: 1.3; }
 
-  /* 详情卡片全屏 + 纵向滚动 */
+  /* 详情卡片全屏 */
   .weapon-modal { padding: 0; }
   .weapon-card {
     max-width: 100%;
@@ -156,24 +318,18 @@ body {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* 头部吸顶，X 固定右上，永远可见，并增加刘海屏安全区 */
   .weapon-header {
     padding: calc(14px + env(safe-area-inset-top)) 58px 14px 16px;
-    min-height: 52px;
+    min-height: 54px;
   }
-  .weapon-header .close-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 26px;
-  }
+  .weapon-header .close-btn { width: 44px; height: 44px; font-size: 26px; }
 
-  /* 图片 + 属性：单列，整体拉长，靠滚动看 */
+  /* 图片 + 属性：单列 */
   .weapon-top { grid-template-columns: 1fr; justify-items: center; gap: 12px; padding: 16px; }
   .weapon-img-box { width: 120px; height: 120px; }
   .weapon-stats { width: 100%; grid-template-columns: 1fr; gap: 2px; }
   .stat-row { padding: 6px 0; font-size: var(--fs-stat); }
 
-  /* 各区块字号统一放大 */
   .weapon-tags-section,
   .weapon-source-section,
   .weapon-mods-section { padding: 14px 16px; font-size: var(--fs-body); line-height: 1.9; }
@@ -182,53 +338,64 @@ body {
   .mod-slot-label { min-width: 0; margin-bottom: 4px; }
 }
 
-/* ===== 小屏手机（≤480px）：列表降到 2 列 ===== */
+/* ===== 小屏手机 ===== */
 @media (max-width: 480px) {
   .weapon-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .grid-img-box { width: 72px; height: 72px; }
   .grid-name { font-size: 14px; }
 }
 
-/* ===== Jinn Box 终极统一导航栏 ===== */
-.jinn-top-bar {
+/* ===== Jinn Box 统一顶部导航 ===== */
+.jinn-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
   background: rgba(10,13,21,.94);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,.08);
-  display: flex; flex-direction: column; align-items: center;
-  padding: 12px 16px;
+  text-align: center; padding: 14px 0;
 }
 .jinn-brand {
-  font-size: 22px; font-weight: 900; letter-spacing: 6px;
-  background: linear-gradient(180deg,#fff,#8ea8ff);
+  font-size: 24px; font-weight: 900; letter-spacing: 6px;
+  background: linear-gradient(180deg, #fff, #8ea8ff);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  margin-bottom: 8px;
 }
 .jinn-nav {
-  display: flex; align-items: center; gap: 12px;
-  width: 100%; max-width: 750px;
+  position: fixed; top: 60px; left: 0; right: 0; z-index: 9998;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  background: rgba(10,13,21,.88);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
 }
 .jinn-back {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 14px; border-radius: 999px;
-  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
   color: #e8ecf7 !important; font-size: 13px; font-weight: 700;
-  text-decoration: none !important; transition: 0.2s;
+  text-decoration: none !important; transition: background .15s;
 }
 .jinn-back:hover { background: rgba(255,255,255,.18); }
-.jinn-page-title { font-size: 14px; font-weight: 700; color: #e8ecf7; }
+.jinn-page-title { font-size: 14px; font-weight: 700; opacity: .85; color: #e8ecf7; }
+
+.jinn-watermark {
+  position: fixed; right: 16px; bottom: 16px; z-index: 9997;
+  font-size: 12px; color: rgba(255,255,255,.15);
+  letter-spacing: 2px; pointer-events: none;
+}
 </style>
 </head>
 <body>
-<!-- ================= 统一顶部导航栏 ================= -->
-<div class="jinn-top-bar">
+
+<!-- ================= 统一顶部导航 ================= -->
+<div class="jinn-header">
   <div class="jinn-brand">Jinn Box</div>
-  <div class="jinn-nav">
-    <a class="jinn-back" href="index.html">← 返回</a>
-    <span class="jinn-page-title">武器图鉴</span>
-  </div>
+</div>
+<div class="jinn-nav">
+  <a class="jinn-back" href="index.html">← 返回阿瑞斯病毒2</a>
+  <span class="jinn-page-title">武器图鉴</span>
 </div>
 <!-- ================================================== -->
+
 <div class="main-wrapper">
   <div class="search-wrapper">
     <input type="text" id="searchInput" placeholder="🔍 输入武器名称进行搜索...">
@@ -240,6 +407,8 @@ body {
   <div class="weapon-card" id="modalCard"></div>
 </div>
 
+<div class="jinn-watermark">Jinn Box</div>
+
 <script>
 const weaponData = [
   { name: "烧火竿", imgUrl: "./images/shg.jpg", source: "游园镇-常驻积分商店，98888积分兑换获得", stats: [ { label: "类型", value: "长枪" }, { label: "耐久", value: "2000" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "" }, { label: "攻击力", value: "120-300" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "20" }, { label: "攻击距离", value: "3.2" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "5°→10°" }, { label: "蓄力时间", value: "0.5" }, { label: "后摇时间", value: "0.45" }, { label: "蓄力移速", value: "50" } ], tags: [ { title: "[特殊]", desc: "攻击附带燃烧，每秒造成120点伤害，持续3秒" }, { title: "[特殊]", desc: "攻击附加额外200火焰伤害" } , { title: "[特殊]", desc: "手持武器时，移速增加15%" }, { title: "隐藏[特殊]", desc: "战士使用时有60%概率连续攻击" }  ], mods: [ [ { name: "[火刺]", source: "游园镇-火之高兴情报（打火之高兴5%掉落）", effects: ["额外100火焰伤害"] } ], [ { name: "[[涂层]烧火竿]", source: "游园镇-钻石摊贩", effects: ["体力消耗-10%, 攻击力+30"] } ],  [ { name: "[不知·燚舞] ", source: "消防局-不知·燚舞", effects: ["[改造效果]:攻击力+150", "[特殊]:每攻击4次，召唤不知·燚舞，在周围4个区域分别造成666伤害(4区域全命中最高可造成2664点伤害）"] }, { name: "[火龙头骨] ", source: "港口-魜人岛-火鳞·火现", effects: ["[改造效果]:攻击力+150", "[特殊]:每攻击4次，召唤火鳞·火现对前方扇形范围持续喷火攻击，造成4次200点伤害"] } ],[ { name: "[[材质]燃金]", source: "游园镇-流浪摊贩", effects: ["攻击距离+10%, 攻击力+10"] } ] ] },
@@ -248,7 +417,7 @@ const weaponData = [
 
   { name: "无坚不摧", imgUrl: "./images/wj.jpg", source: "游园镇-右上转盘(120游园币，30抽保底)抽取获得", stats: [ { label: "类型", value: "锤类" }, { label: "耐久", value: "1000" }, { label: "维修", value: "10零件箱3粘合剂" }, { label: "弹药", value: "" }, { label: "攻击力", value: "160-360" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "35" }, { label: "攻击距离", value: "1.8" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "120°" }, { label: "蓄力时间", value: "0.8" }, { label: "后摇时间", value: "0.7" }, { label: "蓄力移速", value: "50" } ], tags: [ { title: "[重锤]", desc: "攻击附带额外100点伤害" }, { title: "[特殊]", desc: "战士使用时有60%概率连续攻击" } ], mods: [ [ { name: "[[材质]刚金]", source: "游园镇-流浪摊贩", effects: ["蓄力时间-10%, 后摇-10%, 攻击力+20"] } ], [ { name: "[[涂层]无坚不摧]", source: "游园镇-钻石摊贩", effects: ["攻击力+40, 体力消耗-10%"] } ], [ { name: "[锤头叹蝎]", source: "蚁穴：兵封王座-蜥蜴王 或 试炼场兑换", effects: ["[改造效果]：攻击力+100，蓄力时间-10%"] } ], [] ] },
 
-  { name: "娇妻", imgUrl: "./images/jq.jpg", source: "游园镇-常驻积分商店，98888积分兑换获得", stats: [ { label: "类型", value: "锤类" }, { label: "耐久", value: "2000" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "" }, { label: "攻击力", value: "160-400" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "35" }, { label: "攻击距离", value: "1.9" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "60°→120°" }, { label: "蓄力时间", value: "0.8" }, { label: "后摇时间", value: "0.7" }, { label: "蓄力移速", value: "50*（1+100%）=100" } ], tags: [ { title: "[竖瞳]", desc: "有一定几率（30%）对甲壳生物造成2000点伤害" }, { title: "[幻影]", desc: "有一定几率（30%）追加1次400点攻击伤害" }, { title: "[杀戮]", desc: "蓄力攻击时移速增加100%" }, { title: "隐藏[特殊]", desc: "战士使用时有60%概率连续攻击" }  ], mods: [ [ { name: "[大眼]", source: "港口-魜人岛-大开眼界", effects: ["攻击力+80，蓄力时间-15%，后摇时间-20%"] }, { name: "[土晶]", source: "游园镇-烂泥情报（打土之厚实5%掉落）", effects: ["额外100追加伤害"] } ], [ { name: "[[涂层]娇妻]", source: "游园镇-钻石摊贩", effects: ["体力消耗-10%，攻击力+40，增加（10%）攻击距离"] } ], [ { name: "[[材质]刚金]", source: "游园镇-流浪摊贩", effects: ["蓄力时间-10%，后摇-10%，攻击力+20"] } ], [ { name: "[蝼蚁头骨]", source: "蚁穴-蛐蛐·蝼蚁", effects: ["[改造效果]：攻击力+200，体力消耗-18%", "[特殊]：每攻击3次召唤蝼蚁，对前方大范围造成600点伤害"] }, { name: "[沙龙头骨]", source: "蚁穴-飞沙·走石", effects: ["[改造效果]：攻击力+200，体力消耗-18%", "[特殊]：每攻击3次召唤飞沙·走石，对前方圆形范围生成尘暴，每秒造成400点伤害和减速效果，持续2秒"] } ] ] },
+  { name: "娇妻", imgUrl: "./images/wj.jpg", source: "游园镇-常驻积分商店，98888积分兑换获得", stats: [ { label: "类型", value: "锤类" }, { label: "耐久", value: "2000" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "" }, { label: "攻击力", value: "160-400" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "35" }, { label: "攻击距离", value: "1.9" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "60°→120°" }, { label: "蓄力时间", value: "0.8" }, { label: "后摇时间", value: "0.7" }, { label: "蓄力移速", value: "50*（1+100%）=100" } ], tags: [ { title: "[竖瞳]", desc: "有一定几率（30%）对甲壳生物造成2000点伤害" }, { title: "[幻影]", desc: "有一定几率（30%）追加1次400点攻击伤害" }, { title: "[杀戮]", desc: "蓄力攻击时移速增加100%" }, { title: "隐藏[特殊]", desc: "战士使用时有60%概率连续攻击" }  ], mods: [ [ { name: "[大眼]", source: "港口-魜人岛-大开眼界", effects: ["攻击力+80，蓄力时间-15%，后摇时间-20%"] }, { name: "[土晶]", source: "游园镇-烂泥情报（打土之厚实5%掉落）", effects: ["额外100追加伤害"] } ], [ { name: "[[涂层]娇妻]", source: "游园镇-钻石摊贩", effects: ["体力消耗-10%，攻击力+40，增加（10%）攻击距离"] } ], [ { name: "[[材质]刚金]", source: "游园镇-流浪摊贩", effects: ["蓄力时间-10%，后摇-10%，攻击力+20"] } ], [ { name: "[蝼蚁头骨]", source: "蚁穴-蛐蛐·蝼蚁", effects: ["[改造效果]：攻击力+200，体力消耗-18%", "[特殊]：每攻击3次召唤蝼蚁，对前方大范围造成600点伤害"] }, { name: "[沙龙头骨]", source: "蚁穴-飞沙·走石", effects: ["[改造效果]：攻击力+200，体力消耗-18%", "[特殊]：每攻击3次召唤飞沙·走石，对前方圆形范围生成尘暴，每秒造成400点伤害和减速效果，持续2秒"] } ] ] },
 
   { name: "年兽战鼓", imgUrl: "./images/zg.jpg", source: "游园镇-限时兑换，98888积分兑换获得", stats: [ { label: "类型", value: "锤类" }, { label: "耐久", value: "1500" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "" }, { label: "攻击力", value: "400" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "25" }, { label: "攻击距离", value: "2.8" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "360°" }, { label: "蓄力时间", value: "0.2" }, { label: "后摇时间", value: "0.3" }, { label: "蓄力移速", value: "100" } ], tags: [{ title: "[战鼓]", desc: "每次攻击附带200点伤害和减速效果" }, { title: "[重锤]", desc: "第3次攻击，攻击范围（距离）翻倍" }, { title: "[鼓舞]", desc: "每次击鼓，提升1层自身和队友士气。每层提高1%攻击，3%移速，最高10层" }, { title: "[震慑]", desc: "每次击鼓，对敌人造成1层震慑效果，每层降低敌人2%攻击力，最高10层" }, { title: "[仅尼克可使用]", desc: "" } ], mods: [ [ { name: "[祥瑞鼓身]", source: "游园镇-限时兑换商店，9888积分", effects: ["25%概率额外造成400点伤害", "隐藏：体力消耗-10%"] } ], [ { name: "[[涂层]年兽战鼓]", source: "游园镇-钻石摊贩", effects: ["体力消耗-10%；攻击力+40"] } ], [ { name: "[材质]", source: "游园镇-流浪摊贩", effects: ["攻击力+10，蓄力时间-10%，后摇-10%"] } ], [ { name: "[震岳不息杵]", source: "游园镇-限时兑换商店，58888积分", effects: ["攻击力+80", "每4次攻击，召唤年兽王原地持续锤击4次，每次造成400点伤害"] } ] ] },
 
@@ -455,7 +624,7 @@ function renderGrid(data = weaponData) {
   data.forEach((weapon) => {
     let imgHtml = '';
     if (weapon.imgUrl && weapon.imgUrl.trim() !== "") {
-      imgHtml = `<img src="${weapon.imgUrl}" alt="${weapon.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'placeholder\\'>暂无图片</span>';">`;
+      imgHtml = `<img src="${weapon.imgUrl}" alt="${weapon.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'placeholder\\'>暂无图片</span>';" loading="lazy">`;
     } else {
       imgHtml = `<span class="placeholder">暂无图片</span>`;
     }
@@ -470,7 +639,7 @@ function openWeaponDetail(weaponName) {
 
   let imgHtml = '';
   if (weapon.imgUrl && weapon.imgUrl.trim() !== "") {
-    imgHtml = `<img src="${weapon.imgUrl}" alt="${weapon.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'placeholder\\'>暂无图片</span>';">`;
+    imgHtml = `<img src="${weapon.imgUrl}" alt="${weapon.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'placeholder\\'>暂无图片</span>';" loading="lazy">`;
   } else {
     imgHtml = `<span class="placeholder">暂无图片</span>`;
   }
@@ -486,7 +655,7 @@ function openWeaponDetail(weaponName) {
     tagsHtml += `<div class="tag-row"><span class="tag-title ${t.color === 'blue' ? 'blue' : ''}">${t.title}</span><span class="tag-desc">${t.desc}</span></div>`;
   });
 
-  let sourceHtml = `<div style="color: #444;">${weapon.source || '--'}</div>`;
+  let sourceHtml = `<div class="source-text">${weapon.source || '--'}</div>`;
 
   let modsHtml = '';
   for (let i = 0; i < 4; i++) {
@@ -542,7 +711,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 
-// 手机/平板：顶部下拉关闭（滚动位置不在顶部时不触发，避免误关）
+// 手机/平板：顶部下拉关闭
 (function bindDragClose() {
   const card = document.getElementById('modalCard');
   let startY = 0, curY = 0, dragging = false;
