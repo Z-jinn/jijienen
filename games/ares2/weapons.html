@@ -35,7 +35,7 @@ body {
 .grid-img-box .placeholder { font-size: 12px; color: #6a6b7c; }
 .grid-name { color: #fff; font-size: 14px; font-weight: bold; text-align: center; word-break: break-all; line-height: 1.3; }
 .no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #8aa0b5; font-size: 16px; background: #2a2b36; border-radius: 12px; }
-.weapon-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+.weapon-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
 .weapon-modal.show { display: flex; }
 .weapon-card {
   background: #eaebf0;
@@ -156,9 +156,9 @@ body {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* 头部吸顶，X 固定右上，永远可见 */
+  /* 头部吸顶，X 固定右上，永远可见，并增加刘海屏安全区 */
   .weapon-header {
-    padding: 14px 58px 14px 16px;
+    padding: calc(14px + env(safe-area-inset-top)) 58px 14px 16px;
     min-height: 52px;
   }
   .weapon-header .close-btn {
@@ -244,7 +244,7 @@ body {
 const weaponData = [
   { name: "烧火竿", imgUrl: "./images/shg.jpg", source: "游园镇-常驻积分商店，98888积分兑换获得", stats: [ { label: "类型", value: "长枪" }, { label: "耐久", value: "2000" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "" }, { label: "攻击力", value: "120-300" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "20" }, { label: "攻击距离", value: "3.2" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "5°→10°" }, { label: "蓄力时间", value: "0.5" }, { label: "后摇时间", value: "0.45" }, { label: "蓄力移速", value: "50" } ], tags: [ { title: "[特殊]", desc: "攻击附带燃烧，每秒造成120点伤害，持续3秒" }, { title: "[特殊]", desc: "攻击附加额外200火焰伤害" } , { title: "[特殊]", desc: "手持武器时，移速增加15%" }, { title: "隐藏[特殊]", desc: "战士使用时有60%概率连续攻击" }  ], mods: [ [ { name: "[火刺]", source: "游园镇-火之高兴情报（打火之高兴5%掉落）", effects: ["额外100火焰伤害"] } ], [ { name: "[[涂层]烧火竿]", source: "游园镇-钻石摊贩", effects: ["体力消耗-10%, 攻击力+30"] } ],  [ { name: "[不知·燚舞] ", source: "消防局-不知·燚舞", effects: ["[改造效果]:攻击力+150", "[特殊]:每攻击4次，召唤不知·燚舞，在周围4个区域分别造成666伤害(4区域全命中最高可造成2664点伤害）"] }, { name: "[火龙头骨] ", source: "港口-魜人岛-火鳞·火现", effects: ["[改造效果]:攻击力+150", "[特殊]:每攻击4次，召唤火鳞·火现对前方扇形范围持续喷火攻击，造成4次200点伤害"] } ],[ { name: "[[材质]燃金]", source: "游园镇-流浪摊贩", effects: ["攻击距离+10%, 攻击力+10"] } ] ] },
 
-  { name: "九霄雷烬", imgUrl: "./images/lq.jpg", source: "游园镇-限时兑换，98888积分兑换获得", stats: [ { label: "类型", value: "长枪" }, { label: "耐久", value: "1000" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "不消耗弹药" }, { label: "攻击力", value: "650" }, { label: "攻击类型", value: "单体伤害" }, { label: "体耗", value: "22" }, { label: "攻击距离", value: "8" }, { label: "精准度", value: "18" }, { label: "散射角度", value: "20°→4°" }, { label: "攻击角度", value: "" }, { label: "蓄力时间", value: "0.5" }, { label: "后摇时间", value: "0.4" }, { label: "蓄力移速", value: "100" } ], tags: [{ title: "[九霄]", desc: "每次攻击投掷雷枪，对范围（360°，1.6距离）内造成一次600雷伤" }, { title: "[雷烬]", desc: "雷矛落地后对周围（360°，1.6距离）敌人每秒造成200点伤害和减速，持续5秒（不可叠加）" }, { title: "[急速]", desc: "蓄力攻击时，不降低移速" }, { title: "[仅尼克可使用]", desc: "" } ], mods: [ [ { name: "[[材质]鸣金]", source: "游园镇-流浪摊贩", effects: ["蓄力时间-10%, 后摇-10%, 攻击力+10"] } ], [ { name: "[[涂层]九霄雷烬]", source: "游园镇-钻石摊贩", effects: ["攻击力+40, 体力消耗-10%"] } ], [ { name: "[电尾追霄柄]", source: "游园镇-限时兑换，9888积分兑换获得", effects: ["20%概率额外造成500点伤害"] } ], [ { name: "[锁雷烬影枪]", source: "游园镇-限时兑换，58888积分兑换获得", effects: ["攻击力+100，隐藏：体耗-10%，后摇-10%", "[烬影]：在靠近场地中存在的雷矛时，获得烬影效果，获得10%攻击力加成且移速大幅提升（100%），持续3秒"] } ]  ]  }, 
+  { name: "九霄雷烬", imgUrl: "./images/lq.jpg", source: "游园镇-限时兑换，98888积分兑换获得", stats: [ { label: "类型", value: "长枪" }, { label: "耐久", value: "1000" }, { label: "维修", value: "10高级零件箱" }, { label: "弹药", value: "不消耗弹药" }, { label: "攻击力", value: "650" }, { label: "攻击类型", value: "单体伤害" }, { label: "体耗", value: "22" }, { label: "攻击距离", value: "8" }, { label: "精准度", value: "18" }, { label: "散射角度", value: "20°→4°" }, { label: "攻击角度", value: "" }, { label: "蓄力时间", value: "0.5" }, { label: "后摇时间", value: "0.4" }, { label: "蓄力移速", value: "100" } ], tags: [{ title: "[九霄]", desc: "每次攻击投掷雷枪，对范围（360°，1.6距离）内造成一次600雷伤" }, { title: "[雷烬]", desc: "雷矛落地后对周围（360°，1.6距离）敌人每秒造成200点伤害和减速，持续5秒（不可叠加）" }, { title: "[急速]", desc: "蓄力攻击时，不降低移速" }, { title: "[仅尼克可使用]", desc: "" } ], mods: [ [ { name: "[[材质]鸣金]", source: "游园镇-流浪摊贩", effects: ["蓄力时间-10%, 后摇-10%, 攻击力+10"] } ], [ { name: "[[涂层]九霄雷烬]", source: "游园镇-钻石摊贩", effects: ["攻击力+40, 体力消耗-10%"] } ], [ { name: "[电尾追霄柄]", source: "游园镇-限时兑换，9888积分兑换获得", effects: ["20%概率额外造成500点伤害"] } ], [ { name: "[锁雷烬影枪]", source: "游园镇-限时兑换，58888积分兑换获得", effects: ["攻击力+100，隐藏：体耗-10%，后摇-10%", "[烬影]：在靠近场地中存在的雷矛时，获得烬影效果，获得10%攻击力加成且移速大幅提升（100%），持续3秒"] } ]  ] }, 
 
   { name: "无坚不摧", imgUrl: "./images/wj.jpg", source: "游园镇-右上转盘(120游园币，30抽保底)抽取获得", stats: [ { label: "类型", value: "锤类" }, { label: "耐久", value: "1000" }, { label: "维修", value: "10零件箱3粘合剂" }, { label: "弹药", value: "" }, { label: "攻击力", value: "160-360" }, { label: "攻击类型", value: "范围伤害" }, { label: "体耗", value: "35" }, { label: "攻击距离", value: "1.8" }, { label: "精准度", value: "" }, { label: "散射角度", value: "" }, { label: "攻击角度", value: "120°" }, { label: "蓄力时间", value: "0.8" }, { label: "后摇时间", value: "0.7" }, { label: "蓄力移速", value: "50" } ], tags: [ { title: "[重锤]", desc: "攻击附带额外100点伤害" }, { title: "[特殊]", desc: "战士使用时有60%概率连续攻击" } ], mods: [ [ { name: "[[材质]刚金]", source: "游园镇-流浪摊贩", effects: ["蓄力时间-10%, 后摇-10%, 攻击力+20"] } ], [ { name: "[[涂层]无坚不摧]", source: "游园镇-钻石摊贩", effects: ["攻击力+40, 体力消耗-10%"] } ], [ { name: "[锤头叹蝎]", source: "蚁穴：兵封王座-蜥蜴王 或 试炼场兑换", effects: ["[改造效果]：攻击力+100，蓄力时间-10%"] } ], [] ] },
 
