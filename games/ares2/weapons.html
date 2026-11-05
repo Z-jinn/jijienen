@@ -2,9 +2,17 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>武器图鉴</title>
 <style>
- body {
+/* ===== 字号变量（统管，避免各处写死） ===== */
+:root {
+  --fs-stat: 13px;
+  --fs-body: 14px;
+  --fs-title: 18px;
+}
+
+body {
   margin: 0;
   padding: 115px 20px 20px !important; /* 给固定导航栏留空间 */
   background: #1a1b23;
@@ -14,55 +22,173 @@
   flex-direction: column;
   align-items: center;
 }
-  .main-wrapper { width: 100%; max-width: 750px; }
-  .search-wrapper { margin-bottom: 20px; }
-  .search-wrapper input { width: 100%; padding: 14px 20px; border-radius: 8px; border: 1px solid #2f4052; background: #2a2b36; color: #fff; font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.3); outline: none; transition: 0.2s; }
-  .search-wrapper input::placeholder { color: #6a6b7c; }
-  .search-wrapper input:focus { border-color: #6a5b8e; box-shadow: 0 0 10px rgba(106, 91, 142, 0.5); }
-  .weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-  .grid-item { background: #2a2b36; border: 1px solid #3b3c4a; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-  .grid-item:hover { transform: translateY(-3px); border-color: #6a5b8e; box-shadow: 0 8px 20px rgba(106, 91, 142, 0.4); background: #32333f; }
-  .grid-img-box { width: 80px; height: 80px; background: #1a1b23; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-  .grid-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-  .grid-img-box .placeholder { font-size: 12px; color: #6a6b7c; }
-  .grid-name { color: #fff; font-size: 14px; font-weight: bold; text-align: center; word-break: break-all; }
-  .no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #8aa0b5; font-size: 16px; background: #2a2b36; border-radius: 12px; }
-  .weapon-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
-  .weapon-modal.show { display: flex; }
-  .weapon-card { background: #eaebf0; border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); width: 100%; max-width: 750px; max-height: 90vh; overflow-y: auto; border: 1px solid #b0b1c0; position: relative; }
-  .weapon-card::-webkit-scrollbar { width: 6px; }
-  .weapon-card::-webkit-scrollbar-thumb { background: #6a5b8e; border-radius: 3px; }
-  .weapon-header { background: #6a5b8e; color: #fff; text-align: center; padding: 12px; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 10; }
-  .weapon-header .close-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 24px; cursor: pointer; color: #d3cae5; transition: 0.2s; }
-  .weapon-header .close-btn:hover { color: #fff; }
-  .weapon-top { display: grid; grid-template-columns: 130px 1fr; gap: 15px; padding: 15px; background: #f4f5f9; border-bottom: 1px solid #d0d1db; }
-  .weapon-img-box { width: 130px; height: 130px; background: #fff; border: 1px solid #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .weapon-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-  .weapon-img-box .placeholder { font-size: 14px; color: #aaa; }
-  .weapon-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 15px; font-size: 13px; }
-  .stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #d0d1db; padding: 3px 0; }
-  .stat-row .label { color: #666; }
-  .stat-row .value { color: #111; font-weight: bold; text-align: right; }
-  .stat-row .empty { color: #999; font-style: italic; font-weight: normal; }
-  .weapon-tags-section { padding: 12px 15px; background: #eaebf0; border-bottom: 1px solid #d0d1db; font-size: 14px; line-height: 1.8; }
-  .weapon-source-section { padding: 12px 15px; background: #eaebf0; border-bottom: 1px solid #d0d1db; font-size: 14px; line-height: 1.8; }
-  .weapon-mods-section { padding: 12px 15px; background: #eaebf0; font-size: 14px; line-height: 1.8; }
-  .section-title { color: #6a5b8e; font-weight: bold; margin-bottom: 6px; font-size: 15px; }
-  .tag-row { margin-bottom: 4px; }
-  .tag-title { color: #e64b4b; font-weight: bold; margin-right: 5px; }
-  .tag-title.blue { color: #3b7bc3; }
-  .tag-desc { color: #444; }
-  .mod-slot { display: flex; margin-bottom: 10px; }
-  .mod-slot:last-child { margin-bottom: 0; }
-  .mod-slot-label { color: #6a5b8e; font-weight: bold; min-width: 58px; flex-shrink: 0; }
-  .mod-slot-content { flex: 1; }
-  .mod-item { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #d0d1db; }
-  .mod-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-  .mod-name { color: #3b7bc3; font-weight: bold; }
-  .mod-source { color: #999; font-size: 12px; font-weight: normal; margin-left: 4px; }
-  .mod-effect { color: #333; padding-left: 5px; display: block; }
-  .mod-empty { color: #999; font-style: italic; }
-  @media (max-width: 600px) { .weapon-top { grid-template-columns: 1fr; justify-items: center; } .weapon-stats { width: 100%; } }
+.main-wrapper { width: 100%; max-width: 750px; }
+.search-wrapper { margin-bottom: 20px; }
+.search-wrapper input { width: 100%; padding: 14px 20px; border-radius: 8px; border: 1px solid #2f4052; background: #2a2b36; color: #fff; font-size: 15px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.3); outline: none; transition: 0.2s; }
+.search-wrapper input::placeholder { color: #6a6b7c; }
+.search-wrapper input:focus { border-color: #6a5b8e; box-shadow: 0 0 10px rgba(106, 91, 142, 0.5); }
+.weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+.grid-item { background: #2a2b36; border: 1px solid #3b3c4a; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); min-width: 0; }
+.grid-item:hover { transform: translateY(-3px); border-color: #6a5b8e; box-shadow: 0 8px 20px rgba(106, 91, 142, 0.4); background: #32333f; }
+.grid-img-box { width: 80px; height: 80px; background: #1a1b23; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.grid-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.grid-img-box .placeholder { font-size: 12px; color: #6a6b7c; }
+.grid-name { color: #fff; font-size: 14px; font-weight: bold; text-align: center; word-break: break-all; line-height: 1.3; }
+.no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #8aa0b5; font-size: 16px; background: #2a2b36; border-radius: 12px; }
+.weapon-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+.weapon-modal.show { display: flex; }
+.weapon-card {
+  background: #eaebf0;
+  border-radius: 12px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+  width: 100%;
+  max-width: min(750px, 96vw);
+  max-height: min(92vh, 92dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #b0b1c0;
+  position: relative;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.weapon-card::-webkit-scrollbar { width: 6px; }
+.weapon-card::-webkit-scrollbar-thumb { background: #6a5b8e; border-radius: 3px; }
+
+/* 头部：X 固定右上，永远可见 */
+.weapon-header {
+  background: #6a5b8e;
+  color: #fff;
+  text-align: center;
+  padding: 12px 58px 12px 16px;
+  font-size: 18px;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 50px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.weapon-header .close-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #fff !important;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.35);
+  transition: 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.weapon-header .close-btn:hover { background: rgba(255,255,255,.32); color: #fff; }
+.weapon-header .close-btn:active { transform: translateY(-50%) scale(.92); }
+
+.weapon-top { display: grid; grid-template-columns: 130px 1fr; gap: 15px; padding: 15px; background: #f4f5f9; border-bottom: 1px solid #d0d1db; }
+.weapon-img-box { width: 130px; height: 130px; background: #fff; border: 1px solid #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.weapon-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.weapon-img-box .placeholder { font-size: 14px; color: #aaa; }
+.weapon-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 15px; font-size: var(--fs-stat); }
+.stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #d0d1db; padding: 3px 0; }
+.stat-row .label { color: #666; }
+.stat-row .value { color: #111; font-weight: bold; text-align: right; }
+.stat-row .empty { color: #999; font-style: italic; font-weight: normal; }
+.weapon-tags-section { padding: 12px 15px; background: #eaebf0; border-bottom: 1px solid #d0d1db; font-size: var(--fs-body); line-height: 1.8; }
+.weapon-source-section { padding: 12px 15px; background: #eaebf0; border-bottom: 1px solid #d0d1db; font-size: var(--fs-body); line-height: 1.8; }
+.weapon-mods-section { padding: 12px 15px; background: #eaebf0; font-size: var(--fs-body); line-height: 1.8; }
+.section-title { color: #6a5b8e; font-weight: bold; margin-bottom: 6px; font-size: 15px; }
+.tag-row { margin-bottom: 4px; }
+.tag-title { color: #e64b4b; font-weight: bold; margin-right: 5px; }
+.tag-title.blue { color: #3b7bc3; }
+.tag-desc { color: #444; }
+.mod-slot { display: flex; margin-bottom: 10px; }
+.mod-slot:last-child { margin-bottom: 0; }
+.mod-slot-label { color: #6a5b8e; font-weight: bold; min-width: 58px; flex-shrink: 0; }
+.mod-slot-content { flex: 1; min-width: 0; }
+.mod-item { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #d0d1db; }
+.mod-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+.mod-name { color: #3b7bc3; font-weight: bold; }
+.mod-source { color: #999; font-size: 12px; font-weight: normal; margin-left: 4px; }
+.mod-effect { color: #333; padding-left: 5px; display: block; }
+.mod-empty { color: #999; font-style: italic; }
+
+/* ===== 平板（iPad 竖屏 768 / 横屏 1024） ===== */
+@media (min-width: 601px) and (max-width: 1100px) {
+  :root { --fs-stat: 15px; --fs-body: 15px; --fs-title: 20px; }
+  body { padding: 118px 24px 24px !important; }
+  .weapon-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 14px; }
+  .weapon-card { max-width: min(760px, 94vw); max-height: 92dvh; }
+  .weapon-top { grid-template-columns: 150px 1fr; }
+  .weapon-img-box { width: 150px; height: 150px; }
+}
+
+/* ===== 手机：列表 3 列（481–600px） ===== */
+@media (max-width: 600px) {
+  :root { --fs-stat: 15px; --fs-body: 15px; --fs-title: 18px; }
+  body { padding: 108px 12px 20px !important; }
+
+  .weapon-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .grid-item { padding: 10px 8px; border-radius: 10px; }
+  .grid-img-box { width: 64px; height: 64px; margin-bottom: 8px; }
+  .grid-name { font-size: 13px; line-height: 1.3; }
+
+  /* 详情卡片全屏 + 纵向滚动 */
+  .weapon-modal { padding: 0; }
+  .weapon-card {
+    max-width: 100%;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* 头部吸顶，X 固定右上，永远可见 */
+  .weapon-header {
+    padding: 14px 58px 14px 16px;
+    min-height: 52px;
+  }
+  .weapon-header .close-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 26px;
+  }
+
+  /* 图片 + 属性：单列，整体拉长，靠滚动看 */
+  .weapon-top { grid-template-columns: 1fr; justify-items: center; gap: 12px; padding: 16px; }
+  .weapon-img-box { width: 120px; height: 120px; }
+  .weapon-stats { width: 100%; grid-template-columns: 1fr; gap: 2px; }
+  .stat-row { padding: 6px 0; font-size: var(--fs-stat); }
+
+  /* 各区块字号统一放大 */
+  .weapon-tags-section,
+  .weapon-source-section,
+  .weapon-mods-section { padding: 14px 16px; font-size: var(--fs-body); line-height: 1.9; }
+  .section-title { font-size: 16px; }
+  .mod-slot { flex-direction: column; }
+  .mod-slot-label { min-width: 0; margin-bottom: 4px; }
+}
+
+/* ===== 小屏手机（≤480px）：列表降到 2 列 ===== */
+@media (max-width: 480px) {
+  .weapon-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .grid-img-box { width: 72px; height: 72px; }
+  .grid-name { font-size: 14px; }
+}
+
 /* ===== Jinn Box 终极统一导航栏 ===== */
 .jinn-top-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
@@ -246,13 +372,22 @@ function openWeaponDetail(weaponName) {
     <div class="weapon-mods-section"><div class="section-title">配件及效果</div>${modsHtml}</div>
   `;
 
+  // 每次打开重置滚动位置与拖拽状态
+  modalCard.scrollTop = 0;
+  modalCard.style.transform = '';
+  modalCard.style.opacity = '';
+
   document.getElementById('weaponModal').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
-  document.getElementById('weaponModal').classList.remove('show');
+  const modal = document.getElementById('weaponModal');
+  modal.classList.remove('show');
   document.body.style.overflow = '';
+  const card = document.getElementById('modalCard');
+  card.style.transform = '';
+  card.style.opacity = '';
 }
 
 document.getElementById('searchInput').addEventListener('input', function(e) {
@@ -260,6 +395,43 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
   const filteredData = weaponData.filter(weapon => weapon.name.toLowerCase().includes(keyword));
   renderGrid(filteredData);
 });
+
+// ESC 关闭（电脑端）
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// 手机/平板：顶部下拉关闭（滚动位置不在顶部时不触发，避免误关）
+(function bindDragClose() {
+  const card = document.getElementById('modalCard');
+  let startY = 0, curY = 0, dragging = false;
+
+  card.addEventListener('touchstart', e => {
+    if (card.scrollTop > 0) return;
+    startY = curY = e.touches[0].clientY;
+    dragging = true;
+  }, { passive: true });
+
+  card.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    curY = e.touches[0].clientY;
+    const dy = curY - startY;
+    if (dy > 0 && card.scrollTop === 0) {
+      const offset = Math.min(dy, 120);
+      card.style.transform = `translateY(${offset}px)`;
+      card.style.opacity = String(1 - offset / 240);
+    }
+  }, { passive: true });
+
+  card.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    const dy = curY - startY;
+    card.style.transform = '';
+    card.style.opacity = '';
+    if (dy > 100 && card.scrollTop === 0) closeModal();
+  });
+})();
 
 window.onload = () => renderGrid();
 </script>
