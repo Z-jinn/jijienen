@@ -62,7 +62,7 @@
         }
         .exchange-summary { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
 
-        /* ============ 全新弹窗基础样式（完美适配小屏滚动） ============ */
+        /* ============ 全新弹窗基础样式 ============ */
         .modal {
             display: none; position: fixed; inset: 0; z-index: 1000;
             background: rgba(0,0,0,0.85);
@@ -78,7 +78,7 @@
             max-height: calc(100dvh - 32px);
             display: flex; flex-direction: column;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: white;
-            overflow: hidden; /* 核心：禁止超出，内部划分布局 */
+            overflow: hidden;
         }
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -102,7 +102,6 @@
         }
         .modal-footer button { margin: 0; width: 100%; }
 
-        /* 弹窗内输入框适配暗色主题 */
         .modal-content input[type="number"], .modal-content input[type="date"] {
             background: #334155; border-color: #475569; color: white;
         }
@@ -412,82 +411,79 @@
             <span class="result-value" id="resCoin">-</span>
         </div>
 
-        <div class="section-title">转盘模拟</div>
-        <button onclick="openGachaModal()" style="width:100%; background:linear-gradient(135deg,#8b5cf6,#6d28d9); font-size:1.1rem; padding:14px; margin-top:0;">
-            打开转盘界面
-        </button>
-
-        <!-- 打气球 -->
-        <div class="section-title">打气球模拟</div>
-        <div style="display:flex; gap:8px; align-items:center;">
-            <input type="number" id="balloonTimes" value="0" min="0" style="width:80px;">
-            <button class="btn-sm" onclick="confirmBalloon()" style="margin:0; background:#10b981; padding:8px 12px; font-size:0.9rem;">确认</button>
-            <button class="btn-sm" onclick="balloonAllIn()" style="margin:0; background:#f59e0b; padding:8px 12px; font-size:0.9rem;">全打</button>
-            <span style="font-size:0.85rem; color:#64748b;">预计: <span id="balloonTime">0秒</span></span>
+        <div class="section-title">结果统计与对比</div>
+        
+        <!-- 模式切换 -->
+        <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <button id="btnModeSim" class="exchange-btn active" style="flex:1; padding:10px 0; border-radius: 10px;" onclick="switchResultMode('sim')">采用模拟结果</button>
+            <button id="btnModeActual" class="exchange-btn" style="flex:1; padding:10px 0; border-radius: 10px;" onclick="switchResultMode('actual')">采用实际结果</button>
         </div>
 
-        <div class="section-title">模拟结果</div>
+        <!-- 模拟模式专属操作区 -->
+        <div id="simActionArea">
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <button onclick="openGachaModal()" style="flex:1; background:linear-gradient(135deg,#8b5cf6,#6d28d9); font-size:1rem; padding:12px; margin-top:0;">
+                    打开转盘界面
+                </button>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+                <span style="font-size:0.9rem; font-weight:600; color:#cbd5e1;">打气球：</span>
+                <input type="number" id="balloonTimes" value="0" min="0" style="width:80px;">
+                <button class="btn-sm" onclick="confirmBalloon()" style="margin:0; background:#10b981; padding:8px 12px; font-size:0.9rem;">确认</button>
+                <button class="btn-sm" onclick="balloonAllIn()" style="margin:0; background:#f59e0b; padding:8px 12px; font-size:0.9rem;">全打</button>
+                <span style="font-size:0.85rem; color:#64748b;">预计: <span id="balloonTime">0秒</span></span>
+            </div>
+        </div>
+
+        <!-- 实际模式专属操作区 -->
+        <div id="actualActionArea" style="display:none; margin-bottom:12px;">
+            <button onclick="openActualModal()" style="width:100%; background:linear-gradient(135deg,#10b981,#059669); font-size:1rem; padding:12px; margin-top:0;">
+                填写实际抽奖结果
+            </button>
+        </div>
+
+        <!-- 统一结果面板 -->
         <div class="result-item">
             <span class="result-label">转盘消耗游园币</span>
-            <span class="result-value" id="gachaCost">0</span>
+            <span class="result-value" id="viewGachaCost">0</span>
         </div>
         <div class="result-item">
             <span class="result-label">转盘获得积分</span>
-            <span class="result-value" id="gachaIntegral">0</span>
+            <span class="result-value" id="viewGachaIntegral">0</span>
         </div>
         <div class="result-item">
             <span class="result-label">转盘获取道具</span>
-            <span class="result-value" id="gachaItems">无</span>
+            <span class="result-value" id="viewGachaItems" style="text-align:right; max-width:60%; word-break:break-all; font-weight:normal;">无</span>
         </div>
         <div class="result-item">
             <span class="result-label">打气球消耗游园币</span>
-            <span class="result-value" id="balloonCost">0</span>
+            <span class="result-value" id="viewBalloonCost">0</span>
         </div>
         <div class="result-item">
             <span class="result-label">打气球获得积分</span>
-            <span class="result-value" id="balloonIntegral">0</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">打气球预计用时</span>
-            <span class="result-value" id="balloonTotalTime">0秒</span>
+            <span class="result-value" id="viewBalloonIntegral">0</span>
         </div>
         <div class="result-item" style="border-top:1px dashed #cbd5e1; padding-top:10px;">
             <span class="result-label">剩余游园币</span>
-            <span class="result-value highlight" id="remainCoins">-</span>
+            <span class="result-value highlight" id="viewRemainCoins">-</span>
         </div>
         <div class="result-item">
             <span class="result-label">最终积分</span>
-            <span class="result-value highlight" id="finalIntegral">-</span>
+            <span class="result-value highlight" id="viewFinalIntegral">-</span>
         </div>
 
-        <!-- 实际结果对比 -->
-        <div class="section-title">实际结果对比</div>
-        <button onclick="openActualModal()" style="width:100%; background:linear-gradient(135deg,#10b981,#059669); font-size:1rem; padding:12px; margin-bottom:12px; margin-top:0;">
-            填写实际抽奖结果
-        </button>
-        <div class="actual-area" style="margin-top:0;">
-            <div class="compare-block">
-                <div class="result-item" style="margin-bottom:0;">
-                    <span class="result-label">填写的积分</span>
-                    <span class="result-value highlight" id="actualTotalIntegral">0</span>
-                </div>
-            </div>
-            <div class="compare-block">
-                <div class="result-item" style="margin-bottom:0;">
-                    <span class="result-label">填写的道具</span>
-                    <span class="result-value" id="actualPropsText" style="text-align:right; max-width:60%; word-break:break-all; font-weight:normal; color:#475569;">无</span>
-                </div>
-            </div>
-            <div class="compare-block" style="border-left:3px solid #f59e0b;">
+        <!-- 对比数据 -->
+        <div class="actual-area" style="margin-top:12px; padding:0; background:transparent;">
+            <div class="compare-block" style="border-left:3px solid #f59e0b; margin-top:0;">
                 <div class="result-item" style="margin-bottom:0;">
                     <span class="result-label">全打气球的积分</span>
-                    <span class="result-value" id="pureBalloonTotalIntegral">0</span>
+                    <span class="result-value" id="viewPureBalloonIntegral">0</span>
                 </div>
             </div>
             <div class="compare-block" style="border-left:3px solid #3b82f6;">
                 <div class="result-item" style="margin-bottom:0;">
                     <span class="result-label">积分差值</span>
-                    <span class="result-value highlight" id="diffActualVsPure">0</span>
+                    <span class="result-value highlight" id="viewDiffIntegral">0</span>
                 </div>
             </div>
         </div>
@@ -522,7 +518,7 @@
     </div>
 </div>
 
-<!-- 实际结果填写弹窗 (全新滑动布局) -->
+<!-- 实际结果填写弹窗 -->
 <div class="modal" id="actualModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -530,16 +526,10 @@
             <button class="modal-close-btn" onclick="closeActualModal()">×</button>
         </div>
         <div class="modal-body">
-            <div style="margin-bottom:10px;">
-                <label style="color:#cbd5e1; display:flex; align-items:center; gap:8px;">
-                    <input type="checkbox" id="useSimResult" onchange="toggleActualInput()" style="width:18px; height:18px;"> 采用模拟结果（自动填入）
-                </label>
-            </div>
-
-            <!-- 转盘选择 -->
+            <!-- 分类选择（转盘 + 打气球） -->
             <div class="exchange-buttons" id="actualGachaButtons"></div>
 
-            <!-- 当前转盘的具体填写区 -->
+            <!-- 当前选中分类的具体填写区 -->
             <div id="actualWheelForm" style="margin-top:4px;"></div>
         </div>
         <div class="modal-footer">
@@ -548,7 +538,7 @@
     </div>
 </div>
 
-<!-- 希望兑换物品弹窗 (全新滑动布局) -->
+<!-- 希望兑换物品弹窗 -->
 <div class="modal" id="exchangeModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -565,7 +555,7 @@
     </div>
 </div>
 
-<!-- 转盘弹窗 (全新滑动布局) -->
+<!-- 转盘弹窗 -->
 <div class="modal" id="gachaModal">
     <div class="modal-content" style="max-width: 480px;">
         <div class="modal-header">
@@ -784,7 +774,7 @@
 
     // ==================== 全局变量 ====================
     let totalCoins = 0;
-    let remainCoins = 0;
+    let remainCoins = 0; // 仅用于模拟抽奖时判断余额
     let gachaSpent = 0;
     let gachaIntegralAcc = 0;
     let gachaItemsAcc = {};
@@ -801,6 +791,7 @@
 
     // 实际填写相关
     let currentActualSuite = 'topLeft';
+    let currentResultMode = 'sim'; // 'sim' or 'actual'
 
     // 按转盘分离的抽奖数据
     function emptyActualData() {
@@ -825,22 +816,118 @@
         return Math.floor(seconds/3600) + '小时' + Math.floor((seconds%3600)/60) + '分';
     }
 
-    function updateSummary() {
-        document.getElementById('gachaCost').textContent = gachaSpent.toLocaleString();
-        document.getElementById('gachaIntegral').textContent = gachaIntegralAcc.toLocaleString();
-        const itemsText = Object.keys(gachaItemsAcc).length === 0 ? '无' :
-            Object.entries(gachaItemsAcc).map(([name, count]) => `${name}x${count}`).join('、');
-        document.getElementById('gachaItems').textContent = itemsText;
-        document.getElementById('balloonCost').textContent = balloonSpent.toLocaleString();
-        document.getElementById('balloonIntegral').textContent = balloonIntegralAcc.toLocaleString();
-        const totalSeconds = balloonTotalTimes * 10;
-        document.getElementById('balloonTotalTime').textContent = formatTime(totalSeconds);
+    // ==================== 核心渲染与逻辑 ====================
+    function switchResultMode(mode) {
+        currentResultMode = mode;
+        if (mode === 'sim') {
+            document.getElementById('btnModeSim').classList.add('active');
+            document.getElementById('btnModeActual').classList.remove('active');
+            document.getElementById('simActionArea').style.display = 'block';
+            document.getElementById('actualActionArea').style.display = 'none';
+        } else {
+            document.getElementById('btnModeSim').classList.remove('active');
+            document.getElementById('btnModeActual').classList.add('active');
+            document.getElementById('simActionArea').style.display = 'none';
+            document.getElementById('actualActionArea').style.display = 'block';
+        }
+        renderResultView();
+    }
 
-        const finalIntegral = baseIntegral + gachaIntegralAcc + balloonIntegralAcc;
-        document.getElementById('finalIntegral').textContent = finalIntegral.toLocaleString();
-        document.getElementById('remainCoins').textContent = remainCoins.toLocaleString();
+    // 计算玩家实际填写的总消耗
+    function calcActualTotalCost() {
+        let total = 0;
+        for (const id in gachaConfig) {
+            let count = 0;
+            const data = actualData[id];
+            for (const k in data.integrals) count += data.integrals[k];
+            for (const k in data.props) count += data.props[k];
+            total += count * gachaConfig[id].cost;
+        }
+        total += actualBalloonTimesVal * 30;
+        return total;
+    }
+
+    function renderResultView() {
+        let gCost = 0, gIntegral = 0, gItemsStr = '无';
+        let bCost = 0, bIntegral = 0;
+        let totalSpent = 0;
+        
+        if (currentResultMode === 'sim') {
+            gCost = gachaSpent;
+            gIntegral = gachaIntegralAcc;
+            bCost = balloonSpent;
+            bIntegral = balloonIntegralAcc;
+            
+            let itemsArr = [];
+            for (const [name, count] of Object.entries(gachaItemsAcc)) {
+                if (count > 0) itemsArr.push(`${name}x${count}`);
+            }
+            gItemsStr = itemsArr.length > 0 ? itemsArr.join('、') : '无';
+            
+            totalSpent = gCost + bCost;
+        } else {
+            // 实际模式
+            for (const id in gachaConfig) {
+                const data = actualData[id];
+                let count = 0;
+                for (const k in data.integrals) count += data.integrals[k];
+                for (const k in data.props) count += data.props[k];
+                
+                gCost += count * gachaConfig[id].cost;
+                
+                for (const val in data.integrals) {
+                    gIntegral += (data.integrals[val] || 0) * parseInt(val);
+                }
+            }
+            
+            // 合并道具
+            let mergedProps = {};
+            for (const id in gachaConfig) {
+                const data = actualData[id];
+                for (const name in data.props) {
+                    if (data.props[name] > 0) {
+                        mergedProps[name] = (mergedProps[name] || 0) + data.props[name];
+                    }
+                }
+            }
+            let itemsArr = [];
+            for (const name in mergedProps) {
+                itemsArr.push(`${name}x${mergedProps[name]}`);
+            }
+            gItemsStr = itemsArr.length > 0 ? itemsArr.join('、') : '无';
+            
+            bCost = actualBalloonTimesVal * 30;
+            bIntegral = actualBalloonTimesVal * 196;
+            
+            totalSpent = gCost + bCost;
+        }
+        
+        // 计算最终结果
+        const finalIntegral = baseIntegral + gIntegral + bIntegral;
+        const remainCoinsVal = totalCoins - totalSpent;
+        
+        // 比较基准：如果你花掉的这部分游园币，全拿去打气球，能获得多少积分
+        const pureBalloonGain = Math.floor(totalSpent / 30) * 196;
+        const pureBalloonTotal = baseIntegral + pureBalloonGain;
+        const diffPure = finalIntegral - pureBalloonTotal;
+        
+        // 更新 DOM
+        document.getElementById('viewGachaCost').textContent = gCost.toLocaleString();
+        document.getElementById('viewGachaIntegral').textContent = gIntegral.toLocaleString();
+        document.getElementById('viewGachaItems').textContent = gItemsStr;
+        document.getElementById('viewBalloonCost').textContent = bCost.toLocaleString();
+        document.getElementById('viewBalloonIntegral').textContent = bIntegral.toLocaleString();
+        document.getElementById('viewRemainCoins').textContent = remainCoinsVal.toLocaleString();
+        document.getElementById('viewFinalIntegral').textContent = finalIntegral.toLocaleString();
+        document.getElementById('viewPureBalloonIntegral').textContent = pureBalloonTotal.toLocaleString();
+        
+        const dp = document.getElementById('viewDiffIntegral');
+        dp.textContent = (diffPure >= 0 ? '+' : '') + diffPure.toLocaleString();
+        dp.className = 'result-value highlight ' + (diffPure >= 0 ? 'profit-positive' : 'profit-negative');
+        
+        // 更新希望兑换的“当前积分”
+        document.getElementById('currentIntegralForDesired').textContent = finalIntegral.toLocaleString();
         updateDesired();
-        calcActual();
     }
 
     // ==================== 转盘逻辑 ====================
@@ -881,7 +968,6 @@
         return { integral: item.integral || 0, name: resultName };
     }
 
-    // ==================== 弹窗与UI渲染 ====================
     function openGachaModal() {
         document.getElementById('gachaModal').classList.add('active');
         document.getElementById('gachaMenuView').style.display = 'block';
@@ -1028,7 +1114,7 @@
             results.push(res);
         }
         
-        updateSummary();
+        renderResultView();
         updatePityDisplay();
         updateWheelButtons();
         showResultOverlay(results);
@@ -1060,7 +1146,7 @@
         document.getElementById('resultOverlay').style.display = 'none';
     }
 
-    // ==================== 打气球 ====================
+    // ==================== 打气球模拟 ====================
     function updateBalloonTime() {
         const times = parseInt(document.getElementById('balloonTimes').value) || 0;
         const seconds = times * 10;
@@ -1081,7 +1167,7 @@
         balloonTotalTimes += times;
         document.getElementById('balloonTimes').value = 0;
         updateBalloonTime();
-        updateSummary();
+        renderResultView();
     }
 
     function balloonAllIn() {
@@ -1098,7 +1184,7 @@
         updateBalloonTime();
     }
 
-    // ==================== 实际结果对比 ====================
+    // ==================== 实际结果填写 ====================
     function openActualModal() {
         document.getElementById('actualModal').classList.add('active');
         renderActualGachaButtons();
@@ -1107,12 +1193,13 @@
 
     function closeActualModal() {
         document.getElementById('actualModal').classList.remove('active');
-        calcActual();
+        renderResultView();
     }
 
     function renderActualGachaButtons() {
         const container = document.getElementById('actualGachaButtons');
         container.innerHTML = '';
+        
         for (const id in gachaConfig) {
             const btn = document.createElement('button');
             btn.className = 'exchange-btn';
@@ -1125,14 +1212,35 @@
             };
             container.appendChild(btn);
         }
+
+        const balloonBtn = document.createElement('button');
+        balloonBtn.className = 'exchange-btn';
+        if ('balloon' === currentActualSuite) balloonBtn.classList.add('active');
+        balloonBtn.textContent = '打气球';
+        balloonBtn.onclick = () => {
+            currentActualSuite = 'balloon';
+            renderActualGachaButtons();
+            renderActualWheelForm();
+        };
+        container.appendChild(balloonBtn);
     }
 
     function renderActualWheelForm() {
         const container = document.getElementById('actualWheelForm');
         container.innerHTML = '';
 
-        if (document.getElementById('useSimResult').checked) {
-            container.innerHTML = '<div style="color:#94a3b8; font-size:0.9rem; text-align:center; padding:20px 0;">已采用模拟结果，无需手动填写。</div>';
+        if (currentActualSuite === 'balloon') {
+            const hintDiv = document.createElement('div');
+            hintDiv.style.cssText = 'font-size:0.8rem; color:#94a3b8; margin-bottom:12px; padding:8px; background:rgba(255,255,255,0.05); border-radius:8px; line-height:1.4;';
+            container.appendChild(hintDiv);
+
+            const balloonDiv = document.createElement('div');
+            balloonDiv.className = 'inline-field';
+            balloonDiv.innerHTML = `
+                <span>实际打气球次数</span>
+                <input type="number" value="${actualBalloonTimesVal}" min="0" oninput="updateActualBalloon(this.value, this)">
+            `;
+            container.appendChild(balloonDiv);
             return;
         }
 
@@ -1140,16 +1248,10 @@
         const config = gachaConfig[id];
         const data = actualData[id];
 
-        // 1. 抽奖次数
-        const countDiv = document.createElement('div');
-        countDiv.className = 'form-group';
-        countDiv.innerHTML = `
-            <label>抽奖次数（单价 ${config.cost} 游园币）</label>
-            <input type="number" id="actualCount_${id}" value="${data.count}" min="0" oninput="updateActualData('${id}', 'count', this.value)">
-        `;
-        container.appendChild(countDiv);
+        const hintDiv = document.createElement('div');
+        hintDiv.style.cssText = 'font-size:0.8rem; color:#94a3b8; margin-bottom:12px; padding:8px; background:rgba(255,255,255,0.05); border-radius:8px; line-height:1.4;';
+        container.appendChild(hintDiv);
 
-        // 2. 积分档位
         const integrals = new Set();
         config.items.forEach(item => {
             if (item.integral > 0) integrals.add(item.integral);
@@ -1166,13 +1268,12 @@
                 div.className = 'inline-field';
                 div.innerHTML = `
                     <span>积分 x${val}</span>
-                    <input type="number" value="${data.integrals[val] || 0}" min="0" oninput="updateActualData('${id}', 'integral', ${val}, this.value)">
+                    <input type="number" value="${data.integrals[val] || 0}" min="0" oninput="updateActualData('${id}', 'integral', '${val}', this)">
                 `;
                 container.appendChild(div);
             });
         }
 
-        // 3. 道具
         const props = new Set();
         config.items.forEach(item => {
             if (item.integral === 0) {
@@ -1195,81 +1296,54 @@
                 div.className = 'inline-field';
                 div.innerHTML = `
                     <span>${name}</span>
-                    <input type="number" value="${data.props[name] || 0}" min="0" oninput="updateActualData('${id}', 'prop', '${name}', this.value)">
+                    <input type="number" value="${data.props[name] || 0}" min="0" oninput="updateActualData('${id}', 'prop', '${name}', this)">
                 `;
                 container.appendChild(div);
             });
         }
     }
 
-    function updateActualData(wheelId, type, key, val) {
+    function updateActualData(wheelId, type, key, inputEl) {
+        const num = parseInt(inputEl.value) || 0;
+        if (num < 0) { inputEl.value = 0; return; }
+
+        let oldVal = 0;
+        if (type === 'integral') oldVal = actualData[wheelId].integrals[key] || 0;
+        if (type === 'prop') oldVal = actualData[wheelId].props[key] || 0;
+
+        // 试赋值
+        if (type === 'integral') actualData[wheelId].integrals[key] = num;
+        if (type === 'prop') actualData[wheelId].props[key] = num;
+
+        // 检查是否超额
+        let totalCost = calcActualTotalCost();
+        if (totalCost > totalCoins) {
+            alert(`游园币不足！\n你只有 ${totalCoins} 游园币，但目前的填写需要 ${totalCost} 游园币。`);
+            // 还原
+            if (type === 'integral') actualData[wheelId].integrals[key] = oldVal;
+            if (type === 'prop') actualData[wheelId].props[key] = oldVal;
+            inputEl.value = oldVal;
+            return;
+        }
+
+        renderResultView();
+    }
+
+    function updateActualBalloon(val, inputEl) {
         const num = parseInt(val) || 0;
-        if (type === 'count') {
-            actualData[wheelId].count = num;
-        } else if (type === 'integral') {
-            actualData[wheelId].integrals[key] = num;
-        } else if (type === 'prop') {
-            actualData[wheelId].props[key] = num;
+        if (num < 0) { inputEl.value = 0; return; }
+
+        const oldVal = actualBalloonTimesVal;
+        actualBalloonTimesVal = num;
+
+        let totalCost = calcActualTotalCost();
+        if (totalCost > totalCoins) {
+            alert(`游园币不足！\n你只有 ${totalCoins} 游园币，但目前的填写需要 ${totalCost} 游园币。`);
+            actualBalloonTimesVal = oldVal;
+            inputEl.value = oldVal;
+            return;
         }
-        calcActual();
-    }
-
-    function toggleActualInput() {
-        renderActualWheelForm();
-        calcActual();
-    }
-
-    function calcActual() {
-        const useSim = document.getElementById('useSimResult').checked;
-
-        let actualGachaCost = 0;
-        let actualGachaIntegral = 0;
-        let actualPropsList = [];
-        let actualBalloonTimes = 0;
-
-        if (useSim) {
-            actualGachaCost = gachaSpent;
-            actualGachaIntegral = gachaIntegralAcc;
-            actualBalloonTimes = balloonTotalTimes;
-            
-            for (const [name, count] of Object.entries(gachaItemsAcc)) {
-                if (count > 0) actualPropsList.push(`${name}x${count}`);
-            }
-        } else {
-            for (const id in gachaConfig) {
-                const data = actualData[id];
-                actualGachaCost += (data.count || 0) * gachaConfig[id].cost;
-                
-                for (const val in data.integrals) {
-                    actualGachaIntegral += (data.integrals[val] || 0) * parseInt(val);
-                }
-                
-                for (const name in data.props) {
-                    if (data.props[name] > 0) {
-                        actualPropsList.push(`${name}x${data.props[name]}`);
-                    }
-                }
-            }
-
-            const balloonInput = document.getElementById('actualBalloonTimes');
-            if (balloonInput) actualBalloonTimes = parseInt(balloonInput.value) || 0;
-        }
-        
-        const actualBalloonIntegral = actualBalloonTimes * 196;
-        const actualTotalIntegral = baseIntegral + actualGachaIntegral + actualBalloonIntegral;
-
-        document.getElementById('actualTotalIntegral').textContent = actualTotalIntegral.toLocaleString();
-        document.getElementById('actualPropsText').textContent = actualPropsList.length > 0 ? actualPropsList.join('、') : '无';
-
-        const actualTotalCost = actualGachaCost + actualBalloonTimes * 30;
-        const pureBalloonGain = Math.floor(actualTotalCost / 30) * 196;
-        const pureBalloonTotal = baseIntegral + pureBalloonGain;
-        document.getElementById('pureBalloonTotalIntegral').textContent = pureBalloonTotal.toLocaleString();
-
-        const diffPure = actualTotalIntegral - pureBalloonTotal;
-        const dp = document.getElementById('diffActualVsPure');
-        dp.textContent = (diffPure >= 0 ? '+' : '') + diffPure.toLocaleString();
-        dp.className = 'result-value highlight ' + (diffPure >= 0 ? 'profit-positive' : 'profit-negative');
+        renderResultView();
     }
 
     // ==================== 希望兑换 ====================
@@ -1360,7 +1434,7 @@
             summaryEl.textContent = '无';
         }
 
-        const currentIntegral = parseInt(document.getElementById('finalIntegral').textContent.replace(/,/g, '')) || 0;
+        const currentIntegral = parseInt(document.getElementById('viewFinalIntegral').textContent.replace(/,/g, '')) || 0;
         document.getElementById('currentIntegralForDesired').textContent = currentIntegral.toLocaleString();
         const diff = currentIntegral - totalCost;
         const diffEl = document.getElementById('differenceDesired');
@@ -1415,15 +1489,16 @@
         document.getElementById('balloonTimes').value = 0;
         updateBalloonTime();
 
-        document.getElementById('useSimResult').checked = false;
         actualData = emptyActualData();
         actualBalloonTimesVal = 0;
         renderActualWheelForm();
-        calcActual();
+        
+        // 重置为模拟模式
+        switchResultMode('sim');
 
         document.getElementById('resCoin').textContent = c.toLocaleString();
         document.getElementById('resultPanel').style.display = 'block';
-        updateSummary();
+        renderResultView();
     }
 
     function resetAll() {
@@ -1451,11 +1526,11 @@
         baseIntegral = 0;
         pityCounters = { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0, limited: 0 };
         
-        document.getElementById('useSimResult').checked = false;
         actualData = emptyActualData();
         actualBalloonTimesVal = 0;
         renderActualWheelForm();
-        calcActual();
+        
+        switchResultMode('sim');
         
         currentExchangeSuite = '机能';
         selectedExchangeItems.clear();
