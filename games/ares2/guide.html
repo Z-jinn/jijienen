@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>新手指南 · Jinn Box</title>
+<style>
+/* ===== 主题变量（与 weapons.html 保持一致） ===== */
+:root {
+  --accent: #8ea8ff;
+  --accent-2: #6a8dff;
+  --text: #e8ecf7;
+  --text-dim: #8b95ad;
+  --text-mute: #64748b;
+  --line: rgba(255,255,255,.1);
+  --line-soft: rgba(255,255,255,.06);
+  --card-bg: rgba(255,255,255,.05);
+  --card-bg-hover: rgba(255,255,255,.09);
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  padding: 132px 16px 60px;
+  background: radial-gradient(1200px 800px at 50% -10%, #1c2440, #0a0d15 60%);
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== 统一顶部导航 ===== */
+.jinn-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(10,13,21,.94);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  text-align: center; padding: 14px 0;
+}
+.jinn-brand {
+  font-size: 24px; font-weight: 900; letter-spacing: 6px;
+  background: linear-gradient(180deg, #fff, #8ea8ff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.jinn-nav {
+  position: fixed; top: 60px; left: 0; right: 0; z-index: 9998;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  background: rgba(10,13,21,.88);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.jinn-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: var(--text) !important; font-size: 13px; font-weight: 700;
+  text-decoration: none !important; transition: background .15s;
+  flex: none;
+}
+.jinn-back:hover { background: rgba(255,255,255,.18); }
+.jinn-page-title { font-size: 14px; font-weight: 700; opacity: .85; }
+
+/* ===== 布局 ===== */
+.main-wrapper { max-width: 760px; margin: 0 auto; }
+
+/* ===== 页面头部 ===== */
+.guide-hero {
+  padding: 4px 4px 20px;
+}
+.guide-hero h1 {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin: 0 0 8px;
+  background: linear-gradient(180deg, #fff, #8ea8ff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.guide-hero p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+/* ===== 目录（自动生成） ===== */
+.guide-toc {
+  position: sticky;
+  top: 112px;
+  z-index: 500;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 2px;
+  margin-bottom: 18px;
+  background: linear-gradient(180deg, rgba(10,13,21,.92), rgba(10,13,21,.72));
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+  scrollbar-width: none;
+}
+.guide-toc::-webkit-scrollbar { display: none; }
+
+.toc-item {
+  flex: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--line-soft);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.toc-item:hover { background: rgba(255,255,255,.12); color: var(--text); }
+.toc-item.active {
+  color: #fff;
+  background: rgba(120,160,255,.22);
+  border-color: rgba(120,160,255,.5);
+}
+
+/* ===== 章节卡片 ===== */
+.guide-section {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px 20px;
+  margin-bottom: 16px;
+  scroll-margin-top: 176px; /* 锚点跳转时避开固定导航 */
+  transition: border-color .18s, background .18s;
+}
+.guide-section:hover {
+  background: var(--card-bg-hover);
+  border-color: rgba(120,160,255,.3);
+}
+
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.sec-icon { font-size: 24px; line-height: 1; flex: none; }
+.sec-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: #fff;
+  margin: 0;
+}
+.sec-tag {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-mute);
+  flex: none;
+}
+
+/* ===== 正文组件（填内容用） ===== */
+
+/* 段落 */
+.sec-body p {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: #cbd5e1;
+}
+.sec-body p:last-child { margin-bottom: 0; }
+
+/* 列表 */
+.sec-body ul,
+.sec-body ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  line-height: 1.9;
+  font-size: 14.5px;
+  color: #cbd5e1;
+}
+.sec-body li { margin-bottom: 6px; }
+.sec-body li:last-child { margin-bottom: 0; }
+.sec-body strong { color: var(--accent); }
+
+/* 提示框：默认蓝色 */
+.callout {
+  margin: 12px 0;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.75;
+  background: rgba(59,130,246,.1);
+  border-left: 3px solid #3b82f6;
+  color: #a8b6cc;
+}
+.callout.warn { background: rgba(239,68,68,.1); border-left-color: #ef4444; }
+.callout.good { background: rgba(16,185,129,.1); border-left-color: #10b981; }
+.callout.gold { background: rgba(245,158,11,.1); border-left-color: #f59e0b; }
+.callout b { color: #e2e8f0; }
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(142,168,255,.15);
+  color: var(--accent);
+  margin-right: 4px;
+}
+.tag.red { background: rgba(239,68,68,.15); color: #f87171; }
+.tag.green { background: rgba(16,185,129,.15); color: #34d399; }
+
+/* 两栏 */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.grid-2 > div {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #cbd5e1;
+}
+.grid-2 > div b { color: #fff; display: block; margin-bottom: 4px; }
+
+/* 步骤 */
+.steps { counter-reset: step; margin: 12px 0; padding: 0; list-style: none; }
+.steps > li {
+  position: relative;
+  padding-left: 38px;
+  margin-bottom: 12px;
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: #cbd5e1;
+}
+.steps > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 1px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800;
+  color: #fff;
+  background: rgba(106,141,255,.3);
+  border: 1px solid rgba(120,160,255,.5);
+}
+
+/* 表格 */
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+.sec-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 420px;
+}
+.sec-body th, .sec-body td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line-soft);
+  color: #cbd5e1;
+}
+.sec-body th {
+  color: #fff;
+  font-weight: 700;
+  background: rgba(255,255,255,.05);
+  white-space: nowrap;
+}
+.sec-body tr:last-child td { border-bottom: none; }
+
+/* 分隔线 */
+.sec-body hr {
+  border: none;
+  border-top: 1px dashed var(--line);
+  margin: 16px 0;
+}
+
+/* ===== 页脚 ===== */
+.guide-footer {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-mute);
+  line-height: 1.8;
+  padding: 20px 0 0;
+}
+
+/* ===== 水印 ===== */
+.jinn-watermark {
+  position: fixed; right: 16px; bottom: 16px; z-index: 9997;
+  font-size: 12px; color: rgba(255,255,255,.15);
+  letter-spacing: 2px; pointer-events: none;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+  body { padding: 128px 12px 48px; }
+  .guide-hero h1 { font-size: 22px; }
+  .guide-section { padding: 18px 16px; border-radius: 16px; scroll-margin-top: 168px; }
+  .sec-title { font-size: 16px; }
+  .sec-icon { font-size: 21px; }
+  .sec-tag { display: none; }
+  .guide-toc { top: 108px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .sec-body p, .sec-body ul, .sec-body ol, .steps > li { font-size: 14px; }
+  .callout { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 统一顶部导航 ================= -->
+<div class="jinn-header">
+  <div class="jinn-brand">Jinn Box</div>
+</div>
+<div class="jinn-nav">
+  <a class="jinn-back" href="index.html">← 返回阿瑞斯病毒2</a>
+  <span class="jinn-page-title">新手指南</span>
+</div>
+<!-- ================================================== -->
+
+<div class="main-wrapper">
+
+  <!-- 页面标题区：改这里 -->
+  <header class="guide-hero">
+    <h1>新手指南</h1>
+    <p>仅供参考，具体视个人情况而定</p>
+  </header>
+
+  <!-- 目录：由下面的 <section> 自动生成，不用手动维护 -->
+  <nav class="guide-toc" id="guideToc"></nav>
+
+  <!-- ============================================================
+       章节模板
+       复制下面整段 <section> 即可新增一节。
+       - id 必填且唯一（用于目录锚点）
+       - data-short 可选，用于目录里的短名（不填就用 h2 文字）
+       - 章节顺序 = 页面顺序 = 目录顺序
+  ============================================================ -->
+
+  <!-- ▼▼▼ 章节 1 ▼▼▼ -->
+  <section class="guide-section" id="sec-1" data-short="知识点">
+    <div class="sec-head">
+      <span class="sec-icon"></span>
+      <h2 class="sec-title">知识点</h2>
+      <span class="sec-tag"></span>
+    </div>
+    <div class="sec-body">
+      <!-- ↓↓↓ 在这里填内容，可用下面这些组件 ↓↓↓ -->
+
+
+      <ul>
+  <li>
+    <strong>攻击类型</strong>分为<br>
+    <strong>范围伤害</strong>（对范围内所有敌人造成伤害，如木棍）<br>
+    <strong>单体伤害</strong>（对范围内攻击动画最先接触的一个敌人造成伤害，如铁皮弓）
+  </li>
+  <li>
+    <strong>伤害类型</strong>分为<br>
+    <strong>普通伤害（红伤）</strong>:即面板和配件显示的攻击力，受普伤减免和增伤以及攻击力加成影响<br>
+    <strong>额外伤害（蓝伤）</strong>:不受普伤减免和增伤以及攻击力加成影响，包括电冰毒雷四种<strong>元素伤害</strong>（受对应元素减伤影响），<strong>流血伤害</strong>，<strong>追加伤害</strong>（受追加伤害减免影响），<strong>克制伤害</strong>（对某种类型的生物造成特攻），<strong>固定伤害</strong>
+  </li>
+  <li>
+    <strong>移速类型</strong>分为<br>
+    <strong>基础移速</strong>:受减速和加速影响<br>
+    <strong>固定移速</strong>:不受减速和加速影响，包括<strong>蓄力移速</strong>（玩家/怪物在蓄力攻击以及攻击后摇期间的移速)，<strong>坐骑移速</strong>
+  </li>
+      </ul>
+
+      <div class="callout">
+      </div>
+
+   
+
+      <!-- ↑↑↑ 内容结束 ↑↑↑ -->
+    </div>
+  </section>
+
+  
+  <!-- ▲▲▲ 复制到上面为止，继续加 section 即可 ▲▲▲ -->
+
+  <footer class="guide-footer">
+   Jinn Box
+  </footer>
+
+</div>
+
+<div class="jinn-watermark">Jinn Box</div>
+
+<script>
+/* ============================================================
+   自动生成目录 + 滚动高亮
+   —— 新增/删除 <section class="guide-section"> 后无需改这里
+   ============================================================ */
+(function () {
+  const toc = document.getElementById('guideToc');
+  const sections = Array.from(document.querySelectorAll('.guide-section'));
+  if (!toc || sections.length === 0) return;
+
+  // 1. 生成目录项
+  sections.forEach(sec => {
+    const id = sec.id;
+    if (!id) return;
+
+    const titleEl = sec.querySelector('.sec-title');
+    const label = sec.dataset.short || (titleEl ? titleEl.textContent.trim() : id);
+
+    const a = document.createElement('a');
+    a.className = 'toc-item';
+    a.href = '#' + id;
+    a.textContent = label;
+    a.dataset.target = id;
+    toc.appendChild(a);
+  });
+
+  const tocItems = Array.from(toc.querySelectorAll('.toc-item'));
+
+  // 2. 点击：平滑滚动（兼容固定导航偏移）
+  toc.addEventListener('click', e => {
+    const a = e.target.closest('.toc-item');
+    if (!a) return;
+    e.preventDefault();
+    const target = document.getElementById(a.dataset.target);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 地址栏不跳动
+    history.replaceState(null, '', '#' + a.dataset.target);
+  });
+
+  // 3. 滚动高亮
+  function setActive(id) {
+    tocItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.target === id);
+    });
+  }
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      // 取当前视口内最靠上的可见 section
+      const visible = entries
+        .filter(en => en.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length > 0) setActive(visible[0].target.id);
+    }, {
+      rootMargin: '-160px 0px -60% 0px',
+      threshold: 0
+    });
+    sections.forEach(sec => io.observe(sec));
+  }
+
+  // 4. 首次进入：若有 hash，滚动到对应位置
+  if (location.hash) {
+    const target = document.querySelector(location.hash);
+    if (target && target.classList.contains('guide-section')) {
+      setTimeout(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setActive(target.id);
+      }, 60);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
